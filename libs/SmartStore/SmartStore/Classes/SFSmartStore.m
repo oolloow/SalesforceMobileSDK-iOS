@@ -1670,6 +1670,39 @@ NSString *const EXPLAIN_ROWS = @"rows";
     }
 }
 
+- (NSArray<NSDictionary*>* __nullable)queryDataWithQuerySpec:(SFQuerySpec *)querySpec pageIndex:(NSUInteger)pageIndex error:(NSError **)error NS_SWIFT_NAME(queryData(using:startingFromPageIndex:)) {
+    NSMutableArray<NSDictionary *> *result = [[NSMutableArray<NSDictionary *> alloc] init];
+    
+    [self inDatabase:^(FMDatabase *db) {
+        // Page
+        NSUInteger offsetRows = querySpec.pageSize * pageIndex;
+        NSUInteger numberRows = querySpec.pageSize;
+        NSString* limit = [NSString stringWithFormat:@"%lu,%lu",(unsigned long)offsetRows,(unsigned long)numberRows];
+        
+        // SQL
+        NSString* sql = [self convertSmartSql: querySpec.smartSql withDb:db];
+        NSString* limitSql = [@[@"SELECT * FROM (", sql, @") LIMIT ", limit] componentsJoinedByString:@""];
+        
+        // Args
+        NSArray* args = [querySpec bindsForQuerySpec];
+        
+        // Executing query
+        FMResultSet *frs = [self executeQueryThrows:limitSql withArgumentsInArray:args withDb:db];
+        
+        while ([frs next]) {
+            NSDictionary *res = [frs resultDictionary];
+            
+            if (res != nil) {
+                [result addObject:res];
+            }
+        }
+        
+        [frs close];
+    } error:error];
+    
+    return result;
+}
+
 - (BOOL) queryAsString:(NSMutableString*)resultString querySpec:(SFQuerySpec *)querySpec pageIndex:(NSUInteger)pageIndex error:(NSError **)error NS_SWIFT_NAME(query(result:querySpec:pageIndex:))
 {
     return [self inDatabase:^(FMDatabase* db) {

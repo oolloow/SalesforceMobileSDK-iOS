@@ -335,6 +335,17 @@ NS_SWIFT_NAME(SmartStore)
 - (NSArray * __nullable)queryWithQuerySpec:(SFQuerySpec *)querySpec pageIndex:(NSUInteger)pageIndex error:(NSError **)error NS_SWIFT_NAME(query(using:startingFromPageIndex:));
 
 /**
+ Search for entries matching the given query spec.
+ 
+ @param querySpec A native query spec.
+ @param pageIndex The page index to start the entries at (this supports paging).
+ @param error Sets/returns any error generated as part of the process.
+ 
+ @return A set of entries given the pageSize provided in the querySpec.
+ */
+- (NSArray<NSDictionary*>* __nullable)queryDataWithQuerySpec:(SFQuerySpec *)querySpec pageIndex:(NSUInteger)pageIndex error:(NSError **)error NS_SWIFT_NAME(queryData(using:startingFromPageIndex:));
+
+/**
  Search for entries matching the given query spec without deserializing any JSON
  
  @param resultString A mutable string to which the result (serialized) is appended
