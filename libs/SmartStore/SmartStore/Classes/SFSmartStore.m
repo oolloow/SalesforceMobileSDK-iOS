@@ -1858,7 +1858,9 @@ NSString *const EXPLAIN_ROWS = @"rows";
                 NSString *rawJson = [frs stringForColumn:SOUP_COL];
                 //TODO this is pretty inefficient...we read json from db then reconvert to NSDictionary, then reconvert again in cordova
                 NSDictionary *entry = [SFJsonUtils objectFromJSONString:rawJson];
-                [result addObject:entry];
+                if (entry != nil) {
+                    [result addObject:entry];
+                }
             }
         }
         
