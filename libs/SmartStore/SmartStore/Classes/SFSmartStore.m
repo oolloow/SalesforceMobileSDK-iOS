@@ -1854,9 +1854,14 @@ NSString *const EXPLAIN_ROWS = @"rows";
 - (NSArray *)retrieveEntries:(NSArray*)soupEntryIds fromSoup:(NSString*)soupName
 {
     __block NSArray* result;
+    NSError* error = nil;
     [self inDatabase:^(FMDatabase* db) {
         result = [self retrieveEntries:soupEntryIds fromSoup:soupName withDb:db];
-    } error:nil];
+    } error:&error];
+    
+    if (error != nil) {
+        [SFSDKSmartStoreLogger e:[self class] format:@"Error: %@ on retrieveEntries", error.localizedDescription];
+    }
     return result;
 }
 
@@ -1896,6 +1901,7 @@ NSString *const EXPLAIN_ROWS = @"rows";
                 [result addObject:entry];
             }
         }
+        
         [frs close];
     }
     
