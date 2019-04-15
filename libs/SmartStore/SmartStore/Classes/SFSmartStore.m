@@ -1650,6 +1650,19 @@ NSString *const EXPLAIN_ROWS = @"rows";
     return result;
 }
 
+- (void)printOutLingeringResults {
+    __unused NSError *er;
+    [self inDatabase:^(FMDatabase *db) {
+        if ([db hasOpenResultSets]) {
+            NSSet *openSetCopy = FMDBReturnAutoreleased([[db valueForKey:@"_openResultSets"] copy]);
+            for (NSValue *rsInWrappedInATastyValueMeal in openSetCopy) {
+                FMResultSet *rs = (FMResultSet *)[rsInWrappedInATastyValueMeal pointerValue];
+                NSLog(@"query: '%@'", [rs query]);
+            }
+        }
+    } error: &er];
+}
+
 - (BOOL) queryAsString:(NSMutableString*)resultString querySpec:(SFQuerySpec *)querySpec pageIndex:(NSUInteger)pageIndex error:(NSError **)error NS_SWIFT_NAME(query(result:querySpec:pageIndex:))
 {
     return [self inDatabase:^(FMDatabase* db) {

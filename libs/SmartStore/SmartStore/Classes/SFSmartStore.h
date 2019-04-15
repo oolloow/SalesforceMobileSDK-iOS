@@ -329,6 +329,8 @@ NS_SWIFT_NAME(SmartStore)
  */
 - (NSArray<NSDictionary*>* __nullable)queryDataWithQuerySpec:(SFQuerySpec *)querySpec pageIndex:(NSUInteger)pageIndex error:(NSError **)error NS_SWIFT_NAME(queryData(using:startingFromPageIndex:));
 
+- (void)printOutLingeringResults;
+
 /**
  Search for entries matching the given query spec without deserializing any JSON
  
