@@ -23,6 +23,7 @@
  */
 
 #import <Foundation/Foundation.h>
+#import "FMDatabase.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
@@ -344,6 +345,12 @@ NS_SWIFT_NAME(SmartStore)
  @return A set of entries given the pageSize provided in the querySpec.
  */
 - (NSArray<NSDictionary*>* __nullable)queryDataWithQuerySpec:(SFQuerySpec *)querySpec pageIndex:(NSUInteger)pageIndex error:(NSError **)error NS_SWIFT_NAME(queryData(using:startingFromPageIndex:));
+
+/**
+ The method that gives access to the raw FMDB interface.
+ This is added by OW.
+ */
+- (BOOL)inDatabase:(void (^)(FMDatabase *db))block error:(NSError* __autoreleasing *)error;
 
 /**
  Search for entries matching the given query spec without deserializing any JSON
