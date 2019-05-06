@@ -104,7 +104,7 @@ static NSError *sLastError = nil;
             [SFLogger log:[self class] level:SFLogLevelDebug format:@"unexpected nil json rep for: %@", obj];
         }
     } else {
-        [SFLogger log:[self class] level:SFLogLevelDebug format:@"invalid object passed to JSONDataRepresentation???"];
+        [SFLogger log:[self class] level:SFLogLevelDebug format:@"invalid object passed to JSONDataRepresentation??? %@", obj];
     }
     return  jsonData;
 }
