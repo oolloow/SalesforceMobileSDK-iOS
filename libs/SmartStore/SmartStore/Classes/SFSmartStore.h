@@ -577,6 +577,8 @@ NS_SWIFT_NAME(SmartStore)
  */
 + (NSDate *)dateFromLastModifiedValue:(NSNumber *)lastModifiedValue NS_SWIFT_NAME(date(lastModifiedValue:));
 
+- (NSString*) convertSmartSql:(NSString*)smartSql withDb:(FMDatabase*)db;
+
 @end
 
 NS_ASSUME_NONNULL_END
