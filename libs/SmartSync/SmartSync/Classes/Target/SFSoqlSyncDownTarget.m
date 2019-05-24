@@ -73,11 +73,12 @@ static NSString * const kSFSoqlSyncTargetQuery = @"query";
             [mutator addSelectFields:self.idFieldName];
         }
         
+        // https://github.com/forcedotcom/SalesforceMobileSDK-iOS/issues/2875
         // Order by 'LastModifiedDate' field if no order by specified
-        if (![mutator hasOrderBy]) {
-            mutated = YES;
-            [mutator replaceOrderBy:self.modificationDateFieldName];
-        }
+//        if (![mutator hasOrderBy]) {
+//            mutated = YES;
+//            [mutator replaceOrderBy:self.modificationDateFieldName];
+//        }
 
         if (mutated) {
             self.query = [[mutator asBuilder] build];
