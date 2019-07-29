@@ -1703,7 +1703,7 @@ NSString *const EXPLAIN_ROWS = @"rows";
     return result;
 }
 
-- (void)queryDataWithQuerySpec:(SFQuerySpec *)querySpec pageIndex:(NSUInteger)pageIndex processingResult: (void (^)(FMResultSet *resultSet))block error:(NSError **)error NS_SWIFT_NAME(queryData(using:startingFromPageIndex:processingResult:)) {
+- (void)queryDataWithQuerySpec:(SFQuerySpec *)querySpec pageIndex:(NSUInteger)pageIndex processingResult: (void (^)(FMResultSet *resultSet))block error:(NSError **)error {
     [self inDatabase:^(FMDatabase *db) {
         // Page
         NSUInteger offsetRows = querySpec.pageSize * pageIndex;

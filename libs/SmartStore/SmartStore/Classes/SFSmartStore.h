@@ -354,7 +354,7 @@ NS_SWIFT_NAME(SmartStore)
  @param block The block to process FMResultSet
  @param error Sets/returns any error generated as part of the process.
  */
-- (void)queryDataWithQuerySpec:(SFQuerySpec *)querySpec pageIndex:(NSUInteger)pageIndex processingResult: (void (^)(FMResultSet *resultSet))block error:(NSError **)error NS_SWIFT_NAME(queryData(using:startingFromPageIndex:processingResult:));
+- (void)queryDataWithQuerySpec:(SFQuerySpec *)querySpec pageIndex:(NSUInteger)pageIndex processingResult: (void (^)(FMResultSet *resultSet))block error:(NSError **)error;
 
 /**
  The method that gives access to the raw FMDB interface.
