@@ -347,6 +347,16 @@ NS_SWIFT_NAME(SmartStore)
 - (NSArray<NSDictionary*>* __nullable)queryDataWithQuerySpec:(SFQuerySpec *)querySpec pageIndex:(NSUInteger)pageIndex error:(NSError **)error NS_SWIFT_NAME(queryData(using:startingFromPageIndex:));
 
 /**
+ Search for entries matching the given query spec.
+ 
+ @param querySpec A native query spec.
+ @param pageIndex The page index to start the entries at (this supports paging).
+ @param block The block to process FMResultSet
+ @param error Sets/returns any error generated as part of the process.
+ */
+- (void)queryDataWithQuerySpec:(SFQuerySpec *)querySpec pageIndex:(NSUInteger)pageIndex processingResult: (void (^)(FMResultSet *resultSet))block error:(NSError **)error NS_SWIFT_NAME(queryData(using:startingFromPageIndex:processingResult:));
+
+/**
  The method that gives access to the raw FMDB interface.
  This is added by OW.
  */

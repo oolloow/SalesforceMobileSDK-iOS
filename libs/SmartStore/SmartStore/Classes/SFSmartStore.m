@@ -1703,6 +1703,29 @@ NSString *const EXPLAIN_ROWS = @"rows";
     return result;
 }
 
+- (void)queryDataWithQuerySpec:(SFQuerySpec *)querySpec pageIndex:(NSUInteger)pageIndex processingResult: (void (^)(FMResultSet *resultSet))block error:(NSError **)error NS_SWIFT_NAME(queryData(using:startingFromPageIndex:processingResult:)) {
+    [self inDatabase:^(FMDatabase *db) {
+        // Page
+        NSUInteger offsetRows = querySpec.pageSize * pageIndex;
+        NSUInteger numberRows = querySpec.pageSize;
+        NSString* limit = [NSString stringWithFormat:@"%lu,%lu",(unsigned long)offsetRows,(unsigned long)numberRows];
+        
+        // SQL
+        NSString* sql = [self convertSmartSql: querySpec.smartSql withDb:db];
+        NSString* limitSql = [@[@"SELECT * FROM (", sql, @") LIMIT ", limit] componentsJoinedByString:@""];
+        
+        // Args
+        NSArray* args = [querySpec bindsForQuerySpec];
+        
+        // Executing query
+        FMResultSet *frs = [self executeQueryThrows:limitSql withArgumentsInArray:args withDb:db];
+        
+        block(frs);
+        
+        [frs close];
+    } error:error];
+}
+
 - (BOOL) queryAsString:(NSMutableString*)resultString querySpec:(SFQuerySpec *)querySpec pageIndex:(NSUInteger)pageIndex error:(NSError **)error NS_SWIFT_NAME(query(result:querySpec:pageIndex:))
 {
     return [self inDatabase:^(FMDatabase* db) {
