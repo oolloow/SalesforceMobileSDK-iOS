@@ -129,9 +129,10 @@ static SFSmartSqlHelper *sharedInstance = nil;
     // With json1 support, the column name could be an expression of the form json_extract(soup, '$.x.y.z')
     // We can't have TABLE_x.json_extract(soup, ...) or table_alias.json_extract(soup, ...) in the sql query
     // Instead we should have json_extract(TABLE_x.soup, ...)
-    NSError *error = nil;
-    NSRegularExpression *regex = [NSRegularExpression regularExpressionWithPattern:@"([^ ]+)\\.json_extract\\(soup" options:0 error:&error];
-    [regex replaceMatchesInString:sql options:0 range:NSMakeRange(0, [sql length]) withTemplate:@"json_extract($1.soup"];
+    // AZ: We do not need that, because we are not idiots. So we query the data always with json_extract({Whatever}.soup) and this regex is wasting precious seconds of time.
+//    NSError *error = nil;
+//    NSRegularExpression *regex = [NSRegularExpression regularExpressionWithPattern:@"([^ ]+)\\.json_extract\\(soup" options:0 error:&error];
+//    [regex replaceMatchesInString:sql options:0 range:NSMakeRange(0, [sql length]) withTemplate:@"json_extract($1.soup"];
     
     return sql;
 }
