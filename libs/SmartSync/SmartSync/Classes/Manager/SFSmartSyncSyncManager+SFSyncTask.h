@@ -1,5 +1,5 @@
 /*
- Copyright (c) 2016-present, salesforce.com, inc. All rights reserved.
+ Copyright (c) 2019-present, salesforce.com, inc. All rights reserved.
  
  Redistribution and use of this software in source and binary forms, with or without modification,
  are permitted provided that the following conditions are met:
@@ -22,10 +22,11 @@
  WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-//  Logic unit tests contain unit test code that is designed to be linked into an independent test executable.
-//  See Also: http://developer.apple.com/iphone/library/documentation/Xcode/Conceptual/iphone_development/135-Unit_Testing_Applications/unit_testing_applications.html
+#import "SFSyncTask.h"
 
-#import "SFSmartStoreFullTextSearchTests.h"
+@interface SFSmartSyncSyncManager (SFSyncTask)
 
-@interface SFSmartStoreFTSWithExternalStorageTests : SFSmartStoreFullTextSearchTests
+- (void) addToActiveSyncs:(SFSyncTask*)syncTask;
+- (void) removeFromActiveSyncs:(SFSyncTask*)syncTask;
+
 @end

@@ -422,6 +422,7 @@ static Class<SFSDKOAuthClientProvider> _clientProvider = nil;
         hostListViewController.hidesCancelButton = YES;
     
         __weak typeof (self) weakSelf = self;
+        controller.modalPresentationStyle = UIModalPresentationFullScreen;
         [self.authWindow presentWindowAnimated:NO withCompletion:^{
             __strong typeof (weakSelf) strongSelf = weakSelf;
             [strongSelf.authWindow.viewController presentViewController:controller animated:NO completion:nil];
@@ -477,8 +478,12 @@ static Class<SFSDKOAuthClientProvider> _clientProvider = nil;
         NSMutableURLRequest *request = [[NSMutableURLRequest alloc] initWithURL:url];
         [request setHTTPMethod:@"GET"];
         [request setHTTPShouldHandleCookies:NO];
-        SFNetwork *network = [[SFNetwork alloc] initWithEphemeralSession];
-        [network sendRequest:request dataResponseBlock:nil];
+
+        __block NSString *networkIdentifier = [SFNetwork uniqueInstanceIdentifier];
+        SFNetwork *network = [SFNetwork sharedEphemeralInstanceWithIdentifier:networkIdentifier];
+        [network sendRequest:request dataResponseBlock:^(NSData * _Nullable data, NSURLResponse * _Nullable response, NSError * _Nullable error) {
+            [SFNetwork removeSharedInstanceForIdentifier:networkIdentifier];
+        }];
     }
     [credentials revoke];
 }
@@ -634,7 +639,7 @@ static Class<SFSDKOAuthClientProvider> _clientProvider = nil;
 
         if (!viewHandler.isAdvancedAuthFlow) {
             UIViewController *controllerToPresent = [[SFSDKNavigationController  alloc]  initWithRootViewController:viewHandler.loginController];
-
+            controllerToPresent.modalPresentationStyle = UIModalPresentationFullScreen;
             [weakSelf.authWindow.viewController presentViewController:controllerToPresent animated:NO completion:^{
                 NSAssert((nil != [viewHandler.loginController.oauthView superview]), @"No superview for oauth web view invoke [super viewDidLayoutSubviews] in the SFLoginViewController subclass");
             }];
