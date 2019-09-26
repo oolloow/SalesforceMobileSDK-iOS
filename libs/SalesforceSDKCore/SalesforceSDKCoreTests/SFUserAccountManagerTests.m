@@ -123,8 +123,7 @@ static NSString * const kOrgIdFormatString = @"00D000000000062EA%lu";
         }
     }
     [self.uam clearAllAccountState];
-    self.uam.currentUser = nil;
-    self.uam.loginHost = nil;
+    [[SFUserAccountManager sharedInstance] setCurrentUserInternal:nil];
     self.uam.useBrowserAuth = NO;
     self.authViewHandler = [SFUserAccountManager sharedInstance].authViewHandler;
     self.config = self.uam.loginViewControllerConfig;
@@ -275,24 +274,11 @@ static NSString * const kOrgIdFormatString = @"00D000000000062EA%lu";
      XCTAssertEqual([self.uam allUserAccounts].count, (NSUInteger)0, @"There should be 0 accounts after delete");
 }
 
-- (void)testSwitchToNewUser {
-    NSArray *accounts = [self createAndVerifyUserAccounts:1];
-    SFUserAccount *origUser = accounts[0];
-    self.uam.currentUser = origUser;
-    TestUserAccountManagerDelegate *acctDelegate = [[TestUserAccountManagerDelegate alloc] init];
-    [self.uam switchToNewUser];
-    XCTAssertEqual(acctDelegate.willSwitchOrigUserAccount, origUser, @"origUser is not equal.");
-    XCTAssertNil(acctDelegate.willSwitchNewUserAccount, @"New user should be nil.");
-    XCTAssertEqual(acctDelegate.didSwitchOrigUserAccount, origUser, @"origUser is not equal.");
-    XCTAssertNil(acctDelegate.didSwitchNewUserAccount, @"New user should be nil.");
-    XCTAssertNotEqual(self.uam.currentUser, origUser, @"The current user should not be the original user.");
-}
-
 - (void)testSwitchToUser {
     NSArray *accounts = [self createAndVerifyUserAccounts:2];
     SFUserAccount *origUser = accounts[0];
     SFUserAccount *newUser = accounts[1];
-    self.uam.currentUser = origUser;
+    [[SFUserAccountManager sharedInstance] setCurrentUserInternal:origUser];
     TestUserAccountManagerDelegate *acctDelegate = [[TestUserAccountManagerDelegate alloc] init];
     [self.uam switchToUser:newUser];
     XCTAssertEqual(acctDelegate.willSwitchOrigUserAccount, origUser, @"origUser is not equal.");
@@ -302,6 +288,20 @@ static NSString * const kOrgIdFormatString = @"00D000000000062EA%lu";
     XCTAssertEqual(self.uam.currentUser, newUser, @"The current user should be set to newUser.");
 }
 
+
+- (void)testSwitchToNewUserNoCurrentUser {
+    [self createAndVerifyUserAccounts:1];
+    [[SFUserAccountManager sharedInstance] setCurrentUserInternal:nil];
+    XCTestExpectation *switchExpectation = [self expectationWithDescription:@"testSwitchToNewUserWithCompletionErrorCase"];
+    __block NSError *error = nil;
+    [self.uam switchToNewUserWithCompletion:^(NSError * err, SFUserAccount * account) {
+         error = err;
+        [switchExpectation fulfill];
+    }];
+    [self waitForExpectationsWithTimeout:10.0 handler:nil];
+    XCTAssertNotNil(error, @"switchToNewUserWithCompletion should not be called without a current user");
+}
+
 - (void)testLoginHostForSwitchToUser {
     NSArray *accounts = [self createAndVerifyUserAccounts:2];
     SFUserAccount *origUser = accounts[0];
@@ -309,7 +309,7 @@ static NSString * const kOrgIdFormatString = @"00D000000000062EA%lu";
     SFUserAccount *newUser = accounts[1];
     NSString *testDomain = @"my.test.domain";
     newUser.credentials.domain = testDomain;
-    self.uam.currentUser = origUser;
+    [[SFUserAccountManager sharedInstance] setCurrentUserInternal:origUser];
     TestUserAccountManagerDelegate *acctDelegate = [[TestUserAccountManagerDelegate alloc] init];
     XCTAssertNotEqual(self.uam.loginHost, testDomain, @"The domains should be different before the test.");
     XCTAssertEqual(newUser.credentials.domain, testDomain, @"User domain should have been set in the credentials.");
@@ -324,7 +324,7 @@ static NSString * const kOrgIdFormatString = @"00D000000000062EA%lu";
 
 - (void)testIdentityDataModification {
     NSArray *accounts = [self createAndVerifyUserAccounts:1];
-    self.uam.currentUser = accounts[0];
+    [[SFUserAccountManager sharedInstance] setCurrentUserInternal:accounts[0]];
     SFIdentityData *idData = [self sampleIdentityData];
     [self.uam applyIdData:idData forUser:self.uam.currentUser];
     int origMobileAppPinLength = self.uam.currentUser.idData.mobileAppPinLength;
@@ -414,29 +414,6 @@ static NSString * const kOrgIdFormatString = @"00D000000000062EA%lu";
    
     [self waitForExpectations:@[refreshExpectation] timeout:20];
     
-}
-- (void)testWillLoginNotificationPosted
-{
-    SFOAuthCredentials *credentials = [self populateAuthCredentialsFromConfigFileForClass:self.class];
-    
-    __block SFUserAccount *user = nil;
-    [self expectationForNotification:kSFNotificationUserWillLogIn object:[SFUserAccountManager sharedInstance] handler:^BOOL(NSNotification * notification) {
-        return notification.userInfo[kSFNotificationUserInfoCredentialsKey]!=nil;
-    }];
-
-    SFSDKTestRequestListener *authListener = [[SFSDKTestRequestListener alloc] init];
-    [[SFUserAccountManager sharedInstance]
-     refreshCredentials:credentials
-     completion:^(SFOAuthInfo *authInfo, SFUserAccount *userAccount) {
-         authListener.returnStatus = kTestRequestStatusDidLoad;
-         user = userAccount;
-     } failure:^(SFOAuthInfo *authInfo, NSError *error) {
-         authListener.lastError = error;
-         authListener.returnStatus = kTestRequestStatusDidFail;
-     }];
-    [authListener waitForCompletion];
-    [self waitForExpectationsWithTimeout:10.0 handler:nil];
-    XCTAssertNotNil(user);
 }
 
 - (void)testEntityId15 {
@@ -668,7 +645,7 @@ static NSString * const kOrgIdFormatString = @"00D000000000062EA%lu";
     //check whether the test config file has never been edited
     NSAssert(![credsData.refreshToken isEqualToString:@"__INSERT_TOKEN_HERE__"],
              @"You need to obtain credentials for your test org and replace test_credentials.json");
-    [SFUserAccountManager sharedInstance].currentUser = nil;
+    [[SFUserAccountManager sharedInstance] setCurrentUserInternal:nil];
     [SFUserAccountManager sharedInstance].oauthClientId = credsData.clientId;
     [SFUserAccountManager sharedInstance].oauthCompletionUrl = credsData.redirectUri;
     [SFUserAccountManager sharedInstance].scopes = [NSSet setWithObjects:@"web", @"api", nil];

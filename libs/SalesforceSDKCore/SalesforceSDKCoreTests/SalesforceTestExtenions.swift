@@ -1,5 +1,9 @@
 /*
- Copyright (c) 2016-present, salesforce.com, inc. All rights reserved.
+ SalesforceTestExtenions.swift
+ SalesforceSDKCoreTests
+ 
+ Created by Raj Rao on 7/25/19.
+ Copyright (c) 2019-present, salesforce.com, inc. All rights reserved.
  
  Redistribution and use of this software in source and binary forms, with or without modification,
  are permitted provided that the following conditions are met:
@@ -22,10 +26,36 @@
  WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-//  Logic unit tests contain unit test code that is designed to be linked into an independent test executable.
-//  See Also: http://developer.apple.com/iphone/library/documentation/Xcode/Conceptual/iphone_development/135-Unit_Testing_Applications/unit_testing_applications.html
 
-#import "SFSmartSqlTests.h"
+import Foundation
+import XCTest
 
-@interface SFSmartSqlWithExternalStorageTests : SFSmartSqlTests
-@end
+// Good suggestion to avoid force unwraps in tests.
+// https://www.swiftbysundell.com/posts/avoiding-force-unwrapping-in-swift-unit-tests
+
+extension XCTestCase {
+    // We conform to LocalizedError in order to be able to output
+    // a nice error message.
+    private struct RequireError<T>: LocalizedError {
+        let file: StaticString
+        let line: UInt
+        
+        // It's important to implement this property, otherwise we won't
+        // get a nice error message in the logs if our tests start to fail.
+        var errorDescription: String? {
+            return "😱 Required value of type \(T.self) was nil at line \(line) in file \(file)."
+        }
+    }
+    
+    // Using file and line lets us automatically capture where
+    // the expression took place in our source code.
+    func require<T>(_ expression: @autoclosure () -> T?,
+                    file: StaticString = #file,
+                    line: UInt = #line) throws -> T {
+        guard let value = expression() else {
+            throw RequireError<T>(file: file, line: line)
+        }
+        
+        return value
+    }
+}

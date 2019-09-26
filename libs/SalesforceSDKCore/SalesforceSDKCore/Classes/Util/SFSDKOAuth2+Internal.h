@@ -1,5 +1,9 @@
 /*
- Copyright (c) 2015-present, salesforce.com, inc. All rights reserved.
+ SFSDKOAuth2+Internal.h
+ SalesforceSDKCore
+ 
+ Created by Raj Rao on 7/11/19.
+ Copyright (c) 2019-present, salesforce.com, inc. All rights reserved.
  
  Redistribution and use of this software in source and binary forms, with or without modification,
  are permitted provided that the following conditions are met:
@@ -22,10 +26,16 @@
  WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-//  Logic unit tests contain unit test code that is designed to be linked into an independent test executable.
-//  See Also: http://developer.apple.com/iphone/library/documentation/Xcode/Conceptual/iphone_development/135-Unit_Testing_Applications/unit_testing_applications.html
+#import <SalesforceSDKCore/SalesforceSDKCore.h>
+#import "SFSDKOAuth2.h"
+NS_ASSUME_NONNULL_BEGIN
 
-#import "SFSmartStoreTestCase.h"
-
-@interface SFSmartStoreFullTextSearchSpeedTests : SFSmartStoreTestCase
+@interface SFSDKOAuth2()
++ (NSDictionary *)parseQueryString:(NSString *)query;
++ (NSDictionary *)parseQueryString:(NSString *)query decodeParams:(BOOL)decodeParams;
++ (NSError *)errorWithType:(NSString *)type description:(NSString *)description;
++ (NSError *)errorWithType:(NSString *)type description:(NSString *)description underlyingError:(NSError *_Nullable)underlyingError;
++ (NSDate *)timestampStringToDate:(NSString *)timestamp;
 @end
+
+NS_ASSUME_NONNULL_END
