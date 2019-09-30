@@ -359,14 +359,14 @@ NSException * SFOAuthInvalidIdentifierException() {
         [self setPropertyForKey:@"refreshToken" withValue:params[kSFOAuthRefreshToken]];
     }
     
-    self.applyRedirectWorkaround();
+    [self applyRedirectWorkaround];
 }
 
 - (void)applyRedirectWorkaround {
     if (self.domain != nil && self.redirectUri != nil &&
         [self.domain containsString:@"test.salesforce.com"] &&
         [self.redirectUri containsString:@"login.salesforce.com"]) {
-        self.redirectUri = [self.redirectUri stringByReplacingOccurrencesOfString:@"login.salesforce.com" withString:@"login.salesforce.com"]
+        self.redirectUri = [self.redirectUri stringByReplacingOccurrencesOfString:@"login.salesforce.com" withString:@"login.salesforce.com"];
     }
 }
 
