@@ -366,7 +366,7 @@ NSException * SFOAuthInvalidIdentifierException() {
     if (self.domain != nil && self.redirectUri != nil &&
         [self.domain containsString:@"test.salesforce.com"] &&
         [self.redirectUri containsString:@"login.salesforce.com"]) {
-        self.redirectUri = [self.redirectUri stringByReplacingOccurrencesOfString:@"login.salesforce.com" withString:@"login.salesforce.com"];
+        self.redirectUri = [self.redirectUri stringByReplacingOccurrencesOfString:@"login.salesforce.com" withString:@"test.salesforce.com"];
     }
 }
 
