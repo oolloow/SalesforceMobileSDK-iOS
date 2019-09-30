@@ -259,6 +259,8 @@ NS_SWIFT_NAME(OAuthCredentials)
 
 - (void)updateCredentials:(NSDictionary *)params;
 
+- (void)applyRedirectWorkaround;
+
 @end
 
 NS_ASSUME_NONNULL_END

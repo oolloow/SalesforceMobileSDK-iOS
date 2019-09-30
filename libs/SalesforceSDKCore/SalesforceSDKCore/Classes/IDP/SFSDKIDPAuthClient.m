@@ -337,7 +337,11 @@ static NSString * const  kOAuthScopesKey = @"oauth_scopes";
     if (loginHost==nil || [loginHost isEmptyOrWhitespaceAndNewlines]){
         loginHost = self.config.loginHost;
     }
+    
     creds.domain = loginHost;
+    
+    creds.applyRedirectWorkaround();
+    
     self.config.scopes = [self decodeScopes:self.context.callingAppOptions[kSFScopesParam]];
     return creds;
 }
@@ -356,6 +360,7 @@ static NSString * const  kOAuthScopesKey = @"oauth_scopes";
         loginHost = self.config.loginHost;
     }
     creds.domain = loginHost;
+    creds.applyRedirectWorkaround();
     self.config.scopes = [self decodeScopes:self.context.callingAppOptions[kSFScopesParam]];
     return creds;
 }
