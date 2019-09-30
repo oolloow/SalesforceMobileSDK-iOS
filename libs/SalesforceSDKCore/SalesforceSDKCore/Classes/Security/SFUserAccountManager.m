@@ -740,8 +740,7 @@ static int const kSFSDKUserAccountManagerErrorCode = 100;
     SFOAuthCredentials *creds = [[SFOAuthCredentials alloc] initWithIdentifier:identifier clientId:self.oauthClientId encrypted:YES];
     creds.redirectUri = self.oauthCompletionUrl;
     creds.domain = self.loginHost;
-    
-    creds.applyRedirectWorkaround();
+    [creds applyRedirectWorkaround];
     
     creds.accessToken = nil;
     return creds;
