@@ -89,6 +89,22 @@
     [self setupWithDecryptionKey:decryptionKey];
 }
 
+- (NSData *)decryptData {
+    [self open];
+    NSMutableData *decryptedData = [[NSMutableData alloc] init];
+    @autoreleasepool {
+        while ([self hasBytesAvailable]) {
+            NSMutableData *decryptedChunk = [[NSMutableData alloc] initWithLength:4096];
+            NSInteger bytesDecrypted = [self read:decryptedChunk.mutableBytes maxLength:decryptedChunk.length];
+            decryptedChunk.length = bytesDecrypted;
+            [decryptedData appendData:decryptedChunk];
+        }
+    }
+    
+    [self close];
+    return decryptedData;
+}
+
 
 #pragma mark - Private
 

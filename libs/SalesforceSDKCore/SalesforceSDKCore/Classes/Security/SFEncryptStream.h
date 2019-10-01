@@ -50,6 +50,8 @@ NS_ASSUME_NONNULL_BEGIN
  */
 - (void)setupWithKey:(NSData *)key andInitializationVector:(nullable NSData *)iv;
 
+- (void)encryptData:(NSData *)data;
+
 @end
 
 NS_ASSUME_NONNULL_END

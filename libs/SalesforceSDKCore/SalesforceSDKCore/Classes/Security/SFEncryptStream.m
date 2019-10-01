@@ -90,6 +90,24 @@
     [self setupWithEncryptionKey:encryptionKey];
 }
 
+- (void)encryptData:(NSData *)data {
+    [self open];
+    NSRange encryptChunkRange = {0};
+    while (encryptChunkRange.location < data.length) {
+        encryptChunkRange.location += encryptChunkRange.length;
+        encryptChunkRange.length = 4096;
+        
+        // Trim len if necessary
+        if (encryptChunkRange.location + encryptChunkRange.length > data.length) {
+            encryptChunkRange.length = data.length - encryptChunkRange.location;
+        }
+        
+        // Write a chunk of bytes
+        [self write:&(data.bytes[encryptChunkRange.location])
+                   maxLength:encryptChunkRange.length];
+    }
+    [self close];
+}
 
 #pragma mark - SFCryptChunks Delegate
 
