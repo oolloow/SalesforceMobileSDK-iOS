@@ -44,7 +44,7 @@
     self = [super init];
     if (self) {
         self.loggingEnabled = YES;
-        self.maxEvents = 1000;
+        self.maxEvents = 1;
         self.storeDirectory = storeDirectory;
 
         // If a data encryptor block is passed in, uses it. Otherwise, creates a block that returns data as-is.
@@ -69,29 +69,29 @@
 }
 
 - (void) storeEvent:(SFSDKInstrumentationEvent *) event {
-    if (!event) {
-        return;
-    }
-
-    // Copies event, to isolate data for I/O.
-    SFSDKInstrumentationEvent *eventCopy = [event copy];
-    if (!eventCopy || ![eventCopy jsonRepresentation]) {
-        return;
-    }
-    if (![self shouldStoreEvent]) {
-        return;
-    }
-    NSData *encryptedData = self.dataEncryptorBlock([eventCopy jsonRepresentation]);
-    NSError *error = nil;
-    if (encryptedData) {
-        NSString *filename = [self filenameForEvent:eventCopy.eventId];
-        NSString *parentDir = [filename stringByDeletingLastPathComponent];
-        [[NSFileManager defaultManager] createDirectoryAtPath:parentDir withIntermediateDirectories:YES attributes: @{ NSFileProtectionKey: NSFileProtectionCompleteUntilFirstUserAuthentication } error:&error];
-        [encryptedData writeToFile:filename options:NSDataWritingFileProtectionCompleteUntilFirstUserAuthentication error:&error];
-        if (error) {
-            [SFSDKAnalyticsLogger w:[self class] format:@"Error occurred while writing to file: %@", error.localizedDescription];
-        }
-    }
+//    if (!event) {
+//        return;
+//    }
+//
+//    // Copies event, to isolate data for I/O.
+//    SFSDKInstrumentationEvent *eventCopy = [event copy];
+//    if (!eventCopy || ![eventCopy jsonRepresentation]) {
+//        return;
+//    }
+//    if (![self shouldStoreEvent]) {
+//        return;
+//    }
+//    NSData *encryptedData = self.dataEncryptorBlock([eventCopy jsonRepresentation]);
+//    NSError *error = nil;
+//    if (encryptedData) {
+//        NSString *filename = [self filenameForEvent:eventCopy.eventId];
+//        NSString *parentDir = [filename stringByDeletingLastPathComponent];
+//        [[NSFileManager defaultManager] createDirectoryAtPath:parentDir withIntermediateDirectories:YES attributes: @{ NSFileProtectionKey: NSFileProtectionCompleteUntilFirstUserAuthentication } error:&error];
+//        [encryptedData writeToFile:filename options:NSDataWritingFileProtectionCompleteUntilFirstUserAuthentication error:&error];
+//        if (error) {
+//            [SFSDKAnalyticsLogger w:[self class] format:@"Error occurred while writing to file: %@", error.localizedDescription];
+//        }
+//    }
 }
 
 - (void) storeEvents:(NSArray<SFSDKInstrumentationEvent *> *) events {

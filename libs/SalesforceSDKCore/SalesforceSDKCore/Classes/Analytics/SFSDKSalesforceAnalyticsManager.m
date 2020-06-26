@@ -157,8 +157,8 @@ UIBackgroundTaskIdentifier task;
             [_remotes addObject:tpp];
         }
         
-        [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(publishOnAppBackground) name:UIApplicationDidEnterBackgroundNotification object:nil];
-        // Only work with auth-based notifications for an authenticated context.
+//        [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(publishOnAppBackground) name:UIApplicationDidEnterBackgroundNotification object:nil];
+//        // Only work with auth-based notifications for an authenticated context.
         if (userAccount != nil) {
             [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(handleUserWillLogout:)  name:kSFNotificationUserWillLogout object:nil];
         }
@@ -167,108 +167,109 @@ UIBackgroundTaskIdentifier task;
 }
 
 - (void) setLoggingEnabled:(BOOL) loggingEnabled {
-    if (loggingEnabled) {
-        [SFSDKAppFeatureMarkers registerAppFeature:kSFAppFeatureAiltnEnabled];
-    } else {
-        [SFSDKAppFeatureMarkers unregisterAppFeature:kSFAppFeatureAiltnEnabled];
-    }
-    [self storeAnalyticsPolicy:loggingEnabled];
-    self.eventStoreManager.loggingEnabled = loggingEnabled;
+//    if (loggingEnabled) {
+//        [SFSDKAppFeatureMarkers registerAppFeature:kSFAppFeatureAiltnEnabled];
+//    } else {
+//        [SFSDKAppFeatureMarkers unregisterAppFeature:kSFAppFeatureAiltnEnabled];
+//    }
+    
+    [self storeAnalyticsPolicy:NO];
+    self.eventStoreManager.loggingEnabled = NO;
 }
 
 - (BOOL)isLoggingEnabled {
-    return [self readAnalyticsPolicy];
+    return NO; //[self readAnalyticsPolicy];
 }
 
 - (void) updateLoggingPrefs {
-    NSDictionary *customAttributes = self.userAccount.idData.customAttributes;
-    if (customAttributes) {
-        NSString *enabled = customAttributes[kAnalyticsOnOffKey];
-        if (enabled == nil) {
-            self.loggingEnabled = YES;
-        } else {
-            self.loggingEnabled = [enabled boolValue];
-        }
-    }
+//    NSDictionary *customAttributes = self.userAccount.idData.customAttributes;
+//    if (customAttributes) {
+//        NSString *enabled = customAttributes[kAnalyticsOnOffKey];
+//        if (enabled == nil) {
+//            self.loggingEnabled = YES;
+//        } else {
+//            self.loggingEnabled = [enabled boolValue];
+//        }
+//    }
 }
 
 - (void) publishAllEvents {
-    @synchronized (self) {
-        NSArray<SFSDKInstrumentationEvent *> *events = [self.eventStoreManager fetchAllEvents];
-        [self publishEvents:events];
-    }
+//    @synchronized (self) {
+//        NSArray<SFSDKInstrumentationEvent *> *events = [self.eventStoreManager fetchAllEvents];
+//        [self publishEvents:events];
+//    }
 }
 
 - (void) publishEvents:(NSArray<SFSDKInstrumentationEvent *> *) events {
-    if (events.count == 0 || self.remotes.count == 0) {
-        return;
-    }
-    @synchronized (self) {
-        NSMutableArray<NSString *> *eventIds = [[NSMutableArray alloc] init];
-        for (SFSDKInstrumentationEvent *event in events) {
-            [eventIds addObject:event.eventId];
-        }
-        __block BOOL overallSuccess = YES;
-        __block BOOL overallCompletionStatus = NO;
-        NSMutableArray<SFSDKAnalyticsTransformPublisherPair *> *remoteKeySet = [self.remotes mutableCopy];
-        __block SFSDKAnalyticsTransformPublisherPair *currentTpp = remoteKeySet[0];
-        PublishCompleteBlock __block publishCompleteBlock = ^void(BOOL success, NSError *error) {
-
-            /*
-             * Updates the success flag only if all previous requests have been
-             * successful. This ensures that the operation is marked success only
-             * if all publishers are successful.
-             */
-            if (overallSuccess) {
-                overallSuccess = success;
-            }
-
-            // Removes current transform from the list since it's done.
-            if (remoteKeySet) {
-                [remoteKeySet removeObject:currentTpp];
-            }
-
-            // If there are no transforms left, we're done here.
-            if (remoteKeySet.count == 0) {
-                overallCompletionStatus = YES;
-            }
-            if (!overallCompletionStatus) {
-                currentTpp = remoteKeySet[0];
-                [self applyTransformAndPublish:currentTpp events:events publishCompleteBlock:publishCompleteBlock];
-            } else {
-
-                /*
-                 * Deletes events from the event store if the network publishing was successful.
-                 */
-                if (overallSuccess) {
-                    [self.eventStoreManager deleteEvents:eventIds];
-                }
-                publishCompleteBlock = nil;
-            }
-            [self cleanupBackgroundTask];
-        };
-        [self applyTransformAndPublish:currentTpp events:events publishCompleteBlock:publishCompleteBlock];
-    }
+//    if (events.count == 0 || self.remotes.count == 0) {
+//        return;
+//    }
+//    @synchronized (self) {
+//        NSMutableArray<NSString *> *eventIds = [[NSMutableArray alloc] init];
+//        for (SFSDKInstrumentationEvent *event in events) {
+//            [eventIds addObject:event.eventId];
+//        }
+//        __block BOOL overallSuccess = YES;
+//        __block BOOL overallCompletionStatus = NO;
+//        NSMutableArray<SFSDKAnalyticsTransformPublisherPair *> *remoteKeySet = [self.remotes mutableCopy];
+//        __block SFSDKAnalyticsTransformPublisherPair *currentTpp = remoteKeySet[0];
+//        PublishCompleteBlock __block publishCompleteBlock = ^void(BOOL success, NSError *error) {
+//
+//            /*
+//             * Updates the success flag only if all previous requests have been
+//             * successful. This ensures that the operation is marked success only
+//             * if all publishers are successful.
+//             */
+//            if (overallSuccess) {
+//                overallSuccess = success;
+//            }
+//
+//            // Removes current transform from the list since it's done.
+//            if (remoteKeySet) {
+//                [remoteKeySet removeObject:currentTpp];
+//            }
+//
+//            // If there are no transforms left, we're done here.
+//            if (remoteKeySet.count == 0) {
+//                overallCompletionStatus = YES;
+//            }
+//            if (!overallCompletionStatus) {
+//                currentTpp = remoteKeySet[0];
+//                [self applyTransformAndPublish:currentTpp events:events publishCompleteBlock:publishCompleteBlock];
+//            } else {
+//
+//                /*
+//                 * Deletes events from the event store if the network publishing was successful.
+//                 */
+//                if (overallSuccess) {
+//                    [self.eventStoreManager deleteEvents:eventIds];
+//                }
+//                publishCompleteBlock = nil;
+//            }
+//            [self cleanupBackgroundTask];
+//        };
+//        [self applyTransformAndPublish:currentTpp events:events publishCompleteBlock:publishCompleteBlock];
+//    }
 }
 
 - (void) publishEvent:(SFSDKInstrumentationEvent *) event {
     if (!event) {
         return;
     }
-    @synchronized (self) {
-        NSMutableArray<SFSDKInstrumentationEvent *> *events = [[NSMutableArray alloc] init];
-        [events addObject:event];
-        [self publishEvents:events];
-    }
+//    @synchronized (self) {
+//        NSMutableArray<SFSDKInstrumentationEvent *> *events = [[NSMutableArray alloc] init];
+//        [events addObject:event];
+//        [self publishEvents:events];
+//    }
 }
 
 - (void) addRemotePublisher:(id<SFSDKTransform>) transformer publisher:(id<SFSDKAnalyticsPublisher>) publisher {
-    if (!transformer || !publisher) {
-        [SFSDKCoreLogger w:[self class] format:@"Invalid transformer and/or publisher"];
-        return;
-    }
-    SFSDKAnalyticsTransformPublisherPair *tpp = [[SFSDKAnalyticsTransformPublisherPair alloc] initWithTransform:transformer publisher:publisher];
-    [self.remotes addObject:tpp];
+//    if (!transformer || !publisher) {
+//        [SFSDKCoreLogger w:[self class] format:@"Invalid transformer and/or publisher"];
+//        return;
+//    }
+//    SFSDKAnalyticsTransformPublisherPair *tpp = [[SFSDKAnalyticsTransformPublisherPair alloc] initWithTransform:transformer publisher:publisher];
+//    [self.remotes addObject:tpp];
 }
 
 + (SFSDKDeviceAppAttributes *) getDeviceAppAttributes {
@@ -291,54 +292,55 @@ UIBackgroundTaskIdentifier task;
 - (void) storeAnalyticsPolicy:(BOOL) enabled {
     @synchronized (self) {
         NSUserDefaults *defs = [NSUserDefaults msdkUserDefaults];
-        [defs setBool:enabled forKey:kAnalyticsOnOffKey];
+        [defs setBool:NO forKey:kAnalyticsOnOffKey];
         [defs synchronize];
     }
 }
 
 - (BOOL) readAnalyticsPolicy {
-    BOOL analyticsEnabled;
-    NSNumber *analyticsEnabledNum = [[NSUserDefaults msdkUserDefaults] objectForKey:kAnalyticsOnOffKey];
-    if (analyticsEnabledNum == nil) {
-        // Default is Enabled.
-        analyticsEnabled = YES;
-        [self storeAnalyticsPolicy:analyticsEnabled];
-    } else {
-        analyticsEnabled = [analyticsEnabledNum boolValue];
-    }
-    return analyticsEnabled;
+//    BOOL analyticsEnabled;
+//    NSNumber *analyticsEnabledNum = [[NSUserDefaults msdkUserDefaults] objectForKey:kAnalyticsOnOffKey];
+//    if (analyticsEnabledNum == nil) {
+//        // Default is Enabled.
+//        analyticsEnabled = YES;
+//        [self storeAnalyticsPolicy:analyticsEnabled];
+//    } else {
+//        analyticsEnabled = [analyticsEnabledNum boolValue];
+//    }
+//    return analyticsEnabled;
+    return NO;
 }
 
 - (void) publishOnAppBackground {
 
     // Publishing should only happen for the current user, not for all users signed in.
-    if (![self.userAccount.accountIdentity isEqual:[SFUserAccountManager sharedInstance].currentUser.accountIdentity]) {
-        return;
-    }
-    dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
-        __block typeof(self) weakSelf = self;
-        task = [[SFApplicationHelper sharedApplication] beginBackgroundTaskWithName:NSStringFromClass([self class]) expirationHandler:^{
-            [weakSelf cleanupBackgroundTask];
-        }];
-        [self publishAllEvents];
-    });
+//    if (![self.userAccount.accountIdentity isEqual:[SFUserAccountManager sharedInstance].currentUser.accountIdentity]) {
+//        return;
+//    }
+//    dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
+//        __block typeof(self) weakSelf = self;
+//        task = [[SFApplicationHelper sharedApplication] beginBackgroundTaskWithName:NSStringFromClass([self class]) expirationHandler:^{
+//            [weakSelf cleanupBackgroundTask];
+//        }];
+//        [self publishAllEvents];
+//    });
 }
 
-- (void) applyTransformAndPublish:(SFSDKAnalyticsTransformPublisherPair *)tpp events:(NSArray<SFSDKInstrumentationEvent *> *) events publishCompleteBlock:(PublishCompleteBlock) publishCompleteBlock {
-    if (tpp) {
-        NSMutableArray *eventsArray = [[NSMutableArray alloc] init];
-        for (SFSDKInstrumentationEvent *event in events) {
-            id transformedEvent = [tpp.transform transform:event];
-            if (transformedEvent != nil) {
-                [eventsArray addObject:transformedEvent];
-            }
-        }
-        id<SFSDKAnalyticsPublisher> networkPublisher = tpp.publisher;
-        if (networkPublisher) {
-            [networkPublisher publish:eventsArray publishCompleteBlock:publishCompleteBlock];
-        }
-    }
-}
+//- (void) applyTransformAndPublish:(SFSDKAnalyticsTransformPublisherPair *)tpp events:(NSArray<SFSDKInstrumentationEvent *> *) events publishCompleteBlock:(PublishCompleteBlock) publishCompleteBlock {
+//    if (tpp) {
+//        NSMutableArray *eventsArray = [[NSMutableArray alloc] init];
+//        for (SFSDKInstrumentationEvent *event in events) {
+//            id transformedEvent = [tpp.transform transform:event];
+//            if (transformedEvent != nil) {
+//                [eventsArray addObject:transformedEvent];
+//            }
+//        }
+//        id<SFSDKAnalyticsPublisher> networkPublisher = tpp.publisher;
+//        if (networkPublisher) {
+//            [networkPublisher publish:eventsArray publishCompleteBlock:publishCompleteBlock];
+//        }
+//    }
+//}
 
 #pragma mark - SFUserAccountManagerDelegate
 - (void)handleUserWillLogout:(NSNotification *)notification {
@@ -354,8 +356,8 @@ UIBackgroundTaskIdentifier task;
 }
 
 - (void) cleanupBackgroundTask {
-    [[SFApplicationHelper sharedApplication] endBackgroundTask:task];
-    task = UIBackgroundTaskInvalid;
+//    [[SFApplicationHelper sharedApplication] endBackgroundTask:task];
+//    task = UIBackgroundTaskInvalid;
 }
 @end
 
