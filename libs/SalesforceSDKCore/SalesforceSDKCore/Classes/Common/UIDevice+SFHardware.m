@@ -269,14 +269,14 @@
 #pragma mark file system -- Thanks Joachim Bean!
 - (NSNumber *) totalDiskSpace
 {
-    NSFileManager *fileManager = [[NSFileManager alloc] init];
+    NSFileManager *fileManager = [NSFileManager defaultManager];
     NSDictionary *fattributes = [fileManager attributesOfFileSystemForPath:NSHomeDirectory() error:nil];
     return [fattributes objectForKey:NSFileSystemSize];
 }
 
 - (NSNumber *) freeDiskSpace
 {
-    NSFileManager *fileManager = [[NSFileManager alloc] init];
+    NSFileManager *fileManager = [NSFileManager defaultManager];
     NSDictionary *fattributes = [fileManager attributesOfFileSystemForPath:NSHomeDirectory() error:nil];
     return [fattributes objectForKey:NSFileSystemFreeSize];
 }
@@ -643,7 +643,7 @@
     if ([[SFApplicationHelper sharedApplication] canOpenURL:[NSURL URLWithString:@"tel://"]]) {
         // Confirm it can make a phone call right now
         CTTelephonyNetworkInfo *netInfo = [[CTTelephonyNetworkInfo alloc] init];
-        CTCarrier *carrier = [netInfo subscriberCellularProvider];
+        CTCarrier *carrier = netInfo.serviceSubscriberCellularProviders.allValues.firstObject;
         NSString *mnc = [carrier mobileNetworkCode];
         canPlaceCall = [mnc length] != 0;
     }

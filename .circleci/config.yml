@@ -1,23 +1,29 @@
+anchors:
+  - &latest-xcode "11.7.0"
+  - &latest-ios   "13.7"
+  - &min-ios      "12.2"
+  - &beta-xcode   "12.0.0"
+  - &beta-ios     "14.0"
+
 executors:
   mac:
     working_directory: ~/SalesforceMobileSDK-iOS
     macos:
-      xcode: 10.3.0
+      xcode: *latest-xcode
     shell: /bin/bash --login -eo pipefail
     environment:
       BASH_ENV: ~/.bashrc
       FASTLANE_SKIP_UPDATE_CHECK: "true"
-      CHRUBY_VER: 2.6.3
+      CHRUBY_VER: 2.7.1
   mac-beta:
     working_directory: ~/SalesforceMobileSDK-iOS
     macos:
-      xcode: 11.0.0
+      xcode: *beta-xcode
     shell: /bin/bash --login -eo pipefail
     environment:
       BASH_ENV: ~/.bashrc
       FASTLANE_SKIP_UPDATE_CHECK: "true"
-      CHRUBY_VER: 2.6.3
-
+      CHRUBY_VER: 2.7.1
 
 version: 2.1
 jobs:
@@ -28,10 +34,10 @@ jobs:
         default: "SalesforceSDKCommon"
       device:
         type: string
-        default: "iPhone XR"
+        default: "iPhone 11"
       ios:
         type: string
-        default: "12.4"
+        default: *latest-xcode
       nightly-test:
         type: boolean
         default: false
@@ -48,8 +54,8 @@ jobs:
       - checkout
       - restore_cache: 
           keys:
-            - v5-gems-{{ checksum ".circleci/Gemfile.lock" }}
-            - v5-gems-
+            - v7-gems-{{ checksum ".circleci/Gemfile.lock" }}
+            - v7-gems-
       - run: 
           name: Install Dependencies
           command:  |
@@ -61,9 +67,9 @@ jobs:
             bundle check || sudo bundle install
             sudo bundle update
       - save_cache: 
-          key: v5-gems-{{ checksum ".circleci/Gemfile.lock" }}
+          key: v7-gems-{{ checksum ".circleci/Gemfile.lock" }}
           paths:
-            - /Users/distiller/.gem/ruby/2.6.3
+            - /Users/distiller/.gem/ruby/2.7.1
       - run: 
           name: Run Tests
           command:  |
@@ -97,86 +103,17 @@ workflows:
   build-test-pr:
     jobs:
       - run-tests:
-          name: "SalesforceSDKCommon"
-          lib: "SalesforceSDKCommon"
+          matrix:
+            parameters:
+              lib: ["SalesforceSDKCommon", "SalesforceAnalytics", "SalesforceSDKCore", "SmartStore", "MobileSync"]
           filters:
             branches:
               only:
                 - /pull.*/
-      - run-tests:
-          name: "SalesforceAnalytics"
-          lib: "SalesforceAnalytics"
-          filters:
-            branches:
-              only:
-                - /pull.*/
-      - run-tests:
-          name: "SalesforceSDKCore"
-          lib: "SalesforceSDKCore"
-          filters:
-            branches:
-              only:
-                - /pull.*/
-      - run-tests:
-          name: "SmartStore"
-          lib: "SmartStore"
-          filters:
-            branches:
-              only:
-                - /pull.*/
-      - run-tests:
-          name: "SmartSync"
-          lib: "SmartSync"
-          filters:
-            branches:
-              only:
-                - /pull.*/
-
-  # Cron are on a timezone 8 hours ahead of PST
-  # Build everything at ~9:30pm Tuesday/Thursday Nights
-  nightly-test-ios11:
-    triggers:
-      - schedule:
-          cron: "30 5 * * 3,5"
-          filters:
-            branches:
-              only:
-                - dev
-    jobs:
-      - run-tests:
-          name: "SalesforceSDKCommon iOS 11 Nightly"
-          lib: "SalesforceSDKCommon"
-          device: "iPhone X"
-          ios: "11.4"
-          nightly-test: true
-      - run-tests:
-          name: "SalesforceAnalytics iOS 11 Nightly"
-          lib: "SalesforceAnalytics"
-          device: "iPhone X"
-          ios: "11.4"
-          nightly-test: true 
-      - run-tests:
-          name: "SalesforceSDKCore iOS 11 Nightly"
-          lib: "SalesforceSDKCore"
-          device: "iPhone X"
-          ios: "11.4"
-          nightly-test: true 
-      - run-tests:
-          name: "SmartStore iOS 11 Nightly"
-          lib: "SmartStore"
-          device: "iPhone X"
-          ios: "11.4"
-          nightly-test: true
-      - run-tests:
-          name: "SmartSync iOS 11 Nightly"
-          lib: "SmartSync"
-          device: "iPhone X"
-          ios: "11.4"
-          nightly-test: true
 
   # Cron are on a timezone 8 hours ahead of PST
   # Build everything at ~10:30pm Tuesday/Thursday Nights
-  nightly-test-ios12:
+  nightly-test-ios:
     triggers:
       - schedule:
           cron: "30 6 * * 3,5"
@@ -186,64 +123,29 @@ workflows:
                 - dev
     jobs:
       - run-tests:
-          name: "SalesforceSDKCommon iOS 12 Nightly"
-          lib: "SalesforceSDKCommon"
-          nightly-test: true
+          name: test << matrix.lib >> iOS << matrix.ios >> 
+          matrix:
+            parameters:
+              lib: ["SalesforceSDKCommon", "SalesforceAnalytics", "SalesforceSDKCore", "SmartStore", "MobileSync"]
+              nightly-test: [true]
+              ios: [*min-ios]
+              device: ["iPhone 8"]
       - run-tests:
-          name: "SalesforceAnalytics iOS 12 Nightly"
-          lib: "SalesforceAnalytics"
-          nightly-test: true 
+          name: test << matrix.lib >> iOS << matrix.ios >> 
+          matrix:
+            parameters:
+              lib: ["SalesforceSDKCommon", "SalesforceAnalytics", "SalesforceSDKCore", "SmartStore", "MobileSync"]
+              nightly-test: [true]
+              ios: [*latest-ios]
+          requires:
+            - test << matrix.lib >> iOS 12.2
       - run-tests:
-          name: "SalesforceSDKCore iOS 12 Nightly"
-          lib: "SalesforceSDKCore"
-          nightly-test: true 
-      - run-tests:
-          name: "SmartStore iOS 12 Nightly"
-          lib: "SmartStore"
-          nightly-test: true
-      - run-tests:
-          name: "SmartSync iOS 12 Nightly"
-          lib: "SmartSync"
-          nightly-test: true
-
-  # Cron are on a timezone 8 hours ahead of PST
-  # Build everything at ~11:30am Tuesday/Thursday Nights
-  nightly-test-ios13:
-    triggers:
-      - schedule:
-          cron: "30 7 * * 3,5"
-          filters:
-            branches:
-              only:
-                - dev
-    jobs:
-      - run-tests:
-          name: "SalesforceSDKCommon iOS 13 Nightly"
-          lib: "SalesforceSDKCommon"
-          nightly-test: true
-          env: "mac-beta"
-          ios: "13.0"
-      - run-tests:
-          name: "SalesforceAnalytics iOS 13 Nightly"
-          lib: "SalesforceAnalytics"
-          nightly-test: true 
-          env: "mac-beta"
-          ios: "13.0"
-      - run-tests:
-          name: "SalesforceSDKCore iOS 13 Nightly"
-          lib: "SalesforceSDKCore"
-          nightly-test: true 
-          env: "mac-beta"
-          ios: "13.0"
-      - run-tests:
-          name: "SmartStore iOS 13 Nightly"
-          lib: "SmartStore"
-          nightly-test: true
-          env: "mac-beta"
-          ios: "13.0"
-      - run-tests:
-          name: "SmartSync iOS 13 Nightly"
-          lib: "SmartSync"
-          nightly-test: true
-          env: "mac-beta"
-          ios: "13.0"
+          name: test << matrix.lib >> iOS << matrix.ios >> 
+          matrix:
+            parameters:
+              lib: ["SalesforceSDKCommon", "SalesforceAnalytics", "SalesforceSDKCore", "SmartStore", "MobileSync"]
+              nightly-test: [true]
+              ios: [*beta-ios]
+              env: [mac-beta]
+          requires:
+            - test << matrix.lib >> iOS 13.7

@@ -66,17 +66,12 @@ NS_ASSUME_NONNULL_BEGIN
 
 /** Provides MD5 conversion support.
  */
-@interface NSData (SFMD5)
-
-/**Converts this NSData to md5 format.
- @return md5 version of data.
- */
-- (NSString *)md5 SFSDK_DEPRECATED(7.2, 8.0, "Use digest,sha1,sha224 or sha256 instead");
+@interface NSData (SFSHA)
 
 /**Derives  a 16-byte  hex encoded string .
  @return 16-byte  hex encoded string.
  */
--(NSString *)digest;
+-(NSString *)digest SFSDK_DEPRECATED("8.3", "9.0", "Will be removed in Mobile SDK 9.0.");
 
 /** Derives  a  sha1  hex encoded string.
  @return md5 version of data.

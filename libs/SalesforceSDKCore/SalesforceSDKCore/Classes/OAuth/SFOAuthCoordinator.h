@@ -22,7 +22,7 @@
  WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#import <SafariServices/SafariServices.h>
+#import <AuthenticationServices/AuthenticationServices.h>
 #import <Security/Security.h>
 #import <UIKit/UIKit.h>
 #import <WebKit/WebKit.h>
@@ -129,17 +129,6 @@ typedef void (^SFOAuthBrowserFlowCallbackBlock)(BOOL);
 - (void)oauthCoordinatorDidAuthenticate:(SFOAuthCoordinator *)coordinator authInfo:(SFOAuthInfo *)info;
 
 /**
- Sent if authentication fails due to an error. Note: This method is deprecated.  You should use the
- `oauthCoordinator:didFailWithError:authInfo` method instead.
- 
- @param coordinator The SFOAuthCoordinator instance processing this message
- @param error       The error message
- 
- @see SFOAuthCoordinator
- */
-- (void)oauthCoordinator:(SFOAuthCoordinator *)coordinator didFailWithError:(NSError *)error __attribute__((deprecated));
-
-/**
  Sent if authentication fails due to an error.
  
  @param coordinator The SFOAuthCoordinator instance processing this message.
@@ -210,14 +199,14 @@ typedef void (^SFOAuthBrowserFlowCallbackBlock)(BOOL);
  */
 - (void)oauthCoordinator:(SFOAuthCoordinator *)coordinator didBeginAuthenticationWithView:(WKWebView *)view;
 
-/** Sent after SFAuthenticationSession was initialized with authentication URL.
+/** Sent after ASWebAuthenticationSession was initialized with authentication URL.
  
  @param coordinator The SFOAuthCoordinator instance processing this message
- @param session     The SFAuthenticationSession instance that will be used to conduct the authentication workflow
+ @param session     The ASWebAuthenticationSession instance that will be used to conduct the authentication workflow
  
  @see SFOAuthCoordinator
  */
-- (void)oauthCoordinator:(SFOAuthCoordinator *)coordinator didBeginAuthenticationWithSession:(SFAuthenticationSession *)session;
+- (void)oauthCoordinator:(SFOAuthCoordinator *)coordinator didBeginAuthenticationWithSession:(ASWebAuthenticationSession *)session;
 
 /**
  Sent to notify the delegate that a browser authentication flow was cancelled out of by the user.
@@ -297,7 +286,7 @@ typedef void (^SFOAuthBrowserFlowCallbackBlock)(BOOL);
 /**
  Auth session through which the user will input OAuth credentials for the user-agent flow OAuth process.
  */
-@property (nonatomic, readonly, null_unspecified) SFAuthenticationSession *authSession;
+@property (nonatomic, readonly, null_unspecified) ASWebAuthenticationSession *asWebAuthenticationSession;
 
 /**
  The user agent string that will be used for authentication.  While this property will persist throughout
@@ -388,7 +377,7 @@ typedef void (^SFOAuthBrowserFlowCallbackBlock)(BOOL);
 
 - (BOOL)handleIDPAuthenticationResponse:(NSURL *)appUrlResponse;
 
-- (void)beginIDPFlow:(SFOAuthCredentials *)spAppCredentials;
+- (void)beginIDPFlow;
 
 @end
 

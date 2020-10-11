@@ -1,3 +1,4 @@
+
 /*
  SFUIWindowManager.m
  SalesforceSDKCore
@@ -143,6 +144,7 @@ static NSString *const kSFPasscodeWindowKey = @"passcode";
         _namedWindows = [NSMapTable mapTableWithKeyOptions:NSMapTableStrongMemory
                                               valueOptions:NSMapTableStrongMemory];
         _delegates = [NSHashTable weakObjectsHashTable];
+        _userInterfaceStyle = UIUserInterfaceStyleUnspecified;
     }
     return self;
 }
@@ -163,12 +165,10 @@ static NSString *const kSFPasscodeWindowKey = @"passcode";
 
 - (SFSDKWindowContainer *)mainWindow {
     SFSDKWindowContainer *mainWindow = [self.namedWindows objectForKey:kSFMainWindowKey];
-    
     if (!mainWindow) {
-        [self setMainUIWindow:[SFApplicationHelper sharedApplication].delegate.window];
-        mainWindow = [self.namedWindows objectForKey:kSFMainWindowKey];
+        UIWindow *keyWindow = [self findKeyWindow];
+        [self setMainUIWindow:keyWindow];
     }
-    
     return [self.namedWindows objectForKey:kSFMainWindowKey];
 }
 
@@ -177,6 +177,7 @@ static NSString *const kSFPasscodeWindowKey = @"passcode";
     container.windowType = SFSDKWindowTypeMain;
     container.windowDelegate = self;
     container.window.alpha = 1.0;
+    [self overrideStyle:container];
     [self.namedWindows setObject:container forKey:kSFMainWindowKey];
 }
 
@@ -185,6 +186,7 @@ static NSString *const kSFPasscodeWindowKey = @"passcode";
     if (!container) {
         container = [self createAuthWindow];
     }
+    [self setWindowScene:container];
     //enforce WindowLevel
     container.windowLevel = self.mainWindow.window.windowLevel + SFWindowLevelAuthOffset;
     return container;
@@ -195,6 +197,7 @@ static NSString *const kSFPasscodeWindowKey = @"passcode";
     if (!container) {
         container = [self createSnapshotWindow];
     }
+    [self setWindowScene:container];
     //enforce WindowLevel
     container.windowLevel = self.mainWindow.window.windowLevel + SFWindowLevelSnapshotOffset;
     return container;
@@ -205,6 +208,7 @@ static NSString *const kSFPasscodeWindowKey = @"passcode";
     if (!container) {
         container = [self createPasscodeWindow];
     }
+    [self setWindowScene:container];
     //enforce WindowLevel
     container.windowLevel = self.mainWindow.window.windowLevel + SFWindowLevelPasscodeOffset;
     return container;
@@ -217,6 +221,7 @@ static NSString *const kSFPasscodeWindowKey = @"passcode";
         container.windowDelegate = self;
         container.windowLevel = UIWindowLevelNormal;
         container.windowType = SFSDKWindowTypeOther;
+        [self overrideStyle:container];
         [self.namedWindows setObject:container forKey:windowName];
     }
     return container;
@@ -240,7 +245,15 @@ static NSString *const kSFPasscodeWindowKey = @"passcode";
 }
 
 - (SFSDKWindowContainer *)windowWithName:(NSString *)name {
-    return [self.namedWindows objectForKey:name];
+    SFSDKWindowContainer *container = [self.namedWindows objectForKey:name];
+    [self setWindowScene:container];
+    return container;
+}
+
+- (void)setWindowScene:(SFSDKWindowContainer *)container {
+    if (@available(iOS 13.0, *)) {
+         container.window.windowScene = self.mainWindow.window.windowScene;
+    }
 }
 
 - (void)addDelegate:(id<SFSDKWindowManagerDelegate>)delegate
@@ -268,6 +281,16 @@ static NSString *const kSFPasscodeWindowKey = @"passcode";
         }];
     }
 }
+
+- (void)setUserInterfaceStyle:(UIUserInterfaceStyle)userInterfaceStyle {
+    _userInterfaceStyle = userInterfaceStyle;
+    NSEnumerator *enumerator = [self.namedWindows objectEnumerator];
+    SFSDKWindowContainer *container;
+    while (container = [enumerator nextObject]) {
+        container.window.overrideUserInterfaceStyle = userInterfaceStyle;
+    }
+}
+
 #pragma mark - SFSDKWindowContainerDelegate
 - (void)presentWindow:(SFSDKWindowContainer *)window animated:(BOOL)animated withCompletion:(void (^ _Nullable)(void))completion{
     
@@ -385,6 +408,7 @@ static NSString *const kSFPasscodeWindowKey = @"passcode";
     SFSDKWindowContainer *container = [[SFSDKWindowContainer alloc] initWithName:kSFSnaphotWindowKey];
     container.windowDelegate = self;
     container.windowType = SFSDKWindowTypeSnapshot;
+    [self overrideStyle:container];
     [self.namedWindows setObject:container forKey:kSFSnaphotWindowKey];
     return container;
 }
@@ -393,6 +417,7 @@ static NSString *const kSFPasscodeWindowKey = @"passcode";
     SFSDKWindowContainer *container = [[SFSDKWindowContainer alloc] initWithName:kSFLoginWindowKey];
     container.windowDelegate = self;
     container.windowType = SFSDKWindowTypeAuth;
+    [self overrideStyle:container];
     [self.namedWindows setObject:container forKey:kSFLoginWindowKey];
     return container;
 }
@@ -401,23 +426,39 @@ static NSString *const kSFPasscodeWindowKey = @"passcode";
     SFSDKWindowContainer *container = [[SFSDKWindowContainer alloc] initWithName:kSFPasscodeWindowKey];
     container.windowDelegate = self;
     container.windowType = SFSDKWindowTypePasscode;
+    [self overrideStyle:container];
     [self.namedWindows setObject:container forKey:kSFPasscodeWindowKey];
     return container;
-}
-
--(UIWindow *)createDefaultUIWindowNamed:(NSString *)name {
-    UIWindow *window = [[SFSDKUIWindow alloc]  initWithFrame:UIScreen.mainScreen.bounds andName:name];
-    [window setAlpha:0.0];
-    window.rootViewController = [[SFSDKRootController alloc] init];
-    return  window;
 }
 
 - (BOOL)isManagedWindow:(UIWindow *) window {
     return [window isKindOfClass:[SFSDKUIWindow class]];
 }
 
+- (UIWindow *)findKeyWindow {
+    UIWindow *mainWindow = [SFApplicationHelper sharedApplication].delegate.window;
+    if (@available(iOS 13.0, *)) {
+        UIWindowScene *scene = (UIWindowScene *) [SFApplicationHelper  sharedApplication].connectedScenes.allObjects.firstObject;
+        for (UIWindow *window in scene.windows) {
+            if (window.isKeyWindow) {
+                mainWindow = window;
+                break;
+            }
+        }
+    }
+    return mainWindow;
+ 
+}
+
 - (UIWindow *)findActiveWindow {
     return [SFApplicationHelper sharedApplication].keyWindow;
+}
+
+// TODO: Remove wrapping method in Mobile SDK 9.0
+- (void)overrideStyle:(SFSDKWindowContainer *)container {
+    if (@available(iOS 13.0, *)) {
+        container.window.overrideUserInterfaceStyle = self.userInterfaceStyle;
+    }
 }
 
 + (instancetype)sharedManager {

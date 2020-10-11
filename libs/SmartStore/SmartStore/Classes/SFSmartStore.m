@@ -174,9 +174,11 @@ NSUInteger CACHES_COUNT_LIMIT = 1024;
         @synchronized ([SFSmartStore class]) {
             if ([SFUserAccountManager sharedInstance].currentUser != nil && !_storeUpgradeHasRun) {
                 _storeUpgradeHasRun = YES;
+                SFSDK_USE_DEPRECATED_BEGIN // TODO: Remove in Mobile SDK 9.0
                 [SFSmartStoreUpgrade updateStoreLocations];
                 [SFSmartStoreUpgrade updateEncryption];
                 [SFSmartStoreUpgrade updateEncryptionSalt];
+                SFSDK_USE_DEPRECATED_END
             }
         }
         _storeName = name;
@@ -287,7 +289,9 @@ NSUInteger CACHES_COUNT_LIMIT = 1024;
         [self.dbMgr removeStoreDir:self.storeName];
     }
     if (self.user != nil) {
+        SFSDK_USE_DEPRECATED_BEGIN // TODO: Remove in Mobile SDK 9.0
         [SFSmartStoreUpgrade setUsesKeyStoreEncryption:result forUser:self.user store:self.storeName];
+        SFSDK_USE_DEPRECATED_END
     }
     return result;
 }
@@ -416,7 +420,9 @@ NSUInteger CACHES_COUNT_LIMIT = 1024;
             [existingStore.storeQueue close];
             [_allSharedStores[userKey] removeObjectForKey:storeName];
         }
+        SFSDK_USE_DEPRECATED_BEGIN // TODO: Remove in Mobile SDK 9.0
         [SFSmartStoreUpgrade setUsesKeyStoreEncryption:NO forUser:user store:storeName];
+        SFSDK_USE_DEPRECATED_END
         [[SFSmartStoreDatabaseManager sharedManagerForUser:user] removeStoreDir:storeName];
     }
 }
@@ -492,6 +498,7 @@ NSUInteger CACHES_COUNT_LIMIT = 1024;
     return !error;
 }
 
+SFSDK_USE_DEPRECATED_BEGIN // TODO: Remove in Mobile SDK 9.0
 - (void)createMetaTablesWithDb:(FMDatabase*) db {
     // Create SOUP_INDEX_MAP_TABLE
     NSString *createSoupIndexTableSql = [NSString stringWithFormat:
@@ -524,6 +531,7 @@ NSUInteger CACHES_COUNT_LIMIT = 1024;
     [self createLongOperationsStatusTableWithDb:db];
     [self executeUpdateThrows:createSoupNamesIndexSql withDb:db];
 }
+
 
 - (void)registerNewSoupAttribute:(NSString *)attrColName
 {
@@ -582,6 +590,7 @@ NSUInteger CACHES_COUNT_LIMIT = 1024;
     [SFSDKSmartStoreLogger d:[self class] format:@"createLongOperationsStatusTableSql: %@", createLongOperationsStatusTableSql];
     [self executeUpdateThrows:createLongOperationsStatusTableSql withDb:db];
 }
+SFSDK_USE_DEPRECATED_END
 
 #pragma mark - Long operations recovery methods
 
@@ -610,12 +619,14 @@ NSUInteger CACHES_COUNT_LIMIT = 1024;
     // TODO assuming all long operations are alter soup operations
     //      revisit when we introduced another type of long operation
     
+    SFSDK_USE_DEPRECATED_BEGIN // TODO: Remove in Mobile SDK 9.0
     FMResultSet* frs = [self queryTable:LONG_OPERATIONS_STATUS_TABLE forColumns:@[ID_COL, DETAILS_COL, STATUS_COL] orderBy:nil limit:nil whereClause:nil whereArgs:nil withDb:db];
     
     while([frs next]) {
         long rowId = [frs longForColumn:ID_COL];
         NSDictionary *details = [SFJsonUtils objectFromJSONString:[frs stringForColumn:DETAILS_COL]];
         SFAlterSoupStep status = (SFAlterSoupStep)[frs intForColumn:STATUS_COL];
+        SFSDK_USE_DEPRECATED_END
         SFAlterSoupLongOperation *longOperation = [[SFAlterSoupLongOperation alloc] initWithStore:self rowId:rowId details:details status:status];
         [longOperations addObject:longOperation];
     }
@@ -637,6 +648,7 @@ NSUInteger CACHES_COUNT_LIMIT = 1024;
     if (self.captureExplainQueryPlan) {
         NSString* explainSql = [NSString stringWithFormat:@"EXPLAIN QUERY PLAN %@", sql];
         NSMutableDictionary* lastPlan = [NSMutableDictionary new];
+        SFSDK_USE_DEPRECATED_BEGIN // TODO: Remove in Mobile SDK 9.0
         lastPlan[EXPLAIN_SQL] = explainSql;
         if (arguments.count > 0) lastPlan[EXPLAIN_ARGS] = arguments;
         NSMutableArray* explainRows = [NSMutableArray new];
@@ -651,6 +663,7 @@ NSUInteger CACHES_COUNT_LIMIT = 1024;
         }
         [frs close];
         lastPlan[EXPLAIN_ROWS] = explainRows;
+        SFSDK_USE_DEPRECATED_END
         self.lastExplainQueryPlan = lastPlan;
     }
     
@@ -736,7 +749,9 @@ NSUInteger CACHES_COUNT_LIMIT = 1024;
 - (NSArray*) allSoupNamesWithDb:(FMDatabase*) db
 {
     NSMutableArray* soupNames = [NSMutableArray array];
+    SFSDK_USE_DEPRECATED_BEGIN // TODO: Remove in Mobile SDK 9.0
     FMResultSet* frs = [self executeQueryThrows:[NSString stringWithFormat:@"SELECT %@ FROM %@", SOUP_NAME_COL, SOUP_ATTRS_TABLE] withDb:db];
+    SFSDK_USE_DEPRECATED_END
     while ([frs next]) {
         [soupNames addObject:[frs stringForColumnIndex:0]];
     }
@@ -1156,11 +1171,13 @@ NSUInteger CACHES_COUNT_LIMIT = 1024;
         return result;
     }
     
+    SFSDK_USE_DEPRECATED_BEGIN // TODO: Remove in Mobile SDK 9.0
     NSString *querySql = [NSString stringWithFormat:@"SELECT %@ FROM %@ WHERE %@ = ? AND %@ = ?",
                           COLUMN_NAME_COL,SOUP_INDEX_MAP_TABLE,
                           SOUP_NAME_COL,
                           PATH_COL
                           ];
+    SFSDK_USE_DEPRECATED_END
     FMResultSet *frs = [self executeQueryThrows:querySql withArgumentsInArray:@[soupName, path] withDb:db];
     if ([frs next]) {
         result = [frs stringForColumnIndex:0];
@@ -1241,7 +1258,9 @@ NSUInteger CACHES_COUNT_LIMIT = 1024;
     NSString *soupTableName = [_soupNameToTableName objectForKey:soupName];
     
     if (nil == soupTableName) {
+        SFSDK_USE_DEPRECATED_BEGIN // TODO: Remove in Mobile SDK 9.0
         NSString *sql = [NSString stringWithFormat:@"SELECT %@ FROM %@ WHERE %@ = ?",ID_COL,SOUP_ATTRS_TABLE,SOUP_NAME_COL];
+        SFSDK_USE_DEPRECATED_END
         FMResultSet *frs = [self executeQueryThrows:sql withArgumentsInArray:@[soupName] withDb:db];
         if ([frs next]) {
             int colIdx = [frs columnIndexForName:ID_COL];
@@ -1269,10 +1288,12 @@ NSUInteger CACHES_COUNT_LIMIT = 1024;
 
 - (NSArray *)tableNamesForAllSoupsWithDb:(FMDatabase*) db{
     NSMutableArray* result = [NSMutableArray array]; // equivalent to: [[[NSMutableArray alloc] init] autorelease]
+    SFSDK_USE_DEPRECATED_BEGIN // TODO: Remove in Mobile SDK 9.0
     NSString* sql = [NSString stringWithFormat:@"SELECT %@ FROM %@", SOUP_NAME_COL, SOUP_ATTRS_TABLE];
     FMResultSet *frs = [self executeQueryThrows:sql withDb:db];
     while ([frs next]) {
         NSString* tableName = [frs stringForColumn:SOUP_NAME_COL];
+        SFSDK_USE_DEPRECATED_END
         [result addObject:tableName];
     }
     
@@ -1293,7 +1314,9 @@ NSUInteger CACHES_COUNT_LIMIT = 1024;
     SFSoupSpec *attrs = [_attrSpecBySoup objectForKey:soupName];
     if (nil == attrs) {
         //no cached attributes ...reload from SOUP_ATTRS_TABLE
+        SFSDK_USE_DEPRECATED_BEGIN // TODO: Remove in Mobile SDK 9.0
         NSString *attrsSql = [NSString stringWithFormat:@"SELECT * FROM %@ WHERE %@ = ?", SOUP_ATTRS_TABLE, SOUP_NAME_COL];
+        SFSDK_USE_DEPRECATED_END
         [SFSDKSmartStoreLogger d:[self class] format:@"attrs sql: %@", attrsSql];
         FMResultSet *frs = [self executeQueryThrows:attrsSql withArgumentsInArray:@[soupName] withDb:db];
         if ([frs next]) {
@@ -1330,7 +1353,7 @@ NSUInteger CACHES_COUNT_LIMIT = 1024;
     NSMutableArray *result = [_indexSpecsBySoup objectForKey:soupName];
     if (nil == result) {
         result = [NSMutableArray array];
-        
+        SFSDK_USE_DEPRECATED_BEGIN // TODO: Remove in Mobile SDK 9.0
         //no cached indices ...reload from SOUP_INDEX_MAP_TABLE
         NSString *querySql = [NSString stringWithFormat:@"SELECT %@,%@,%@ FROM %@ WHERE %@ = ?",
                               PATH_COL, COLUMN_NAME_COL, COLUMN_TYPE_COL,
@@ -1345,6 +1368,7 @@ NSUInteger CACHES_COUNT_LIMIT = 1024;
             SFSoupIndex *spec = [[SFSoupIndex alloc] initWithPath:path indexType:type columnName:columnName];
             [result addObject:spec];
         }
+        SFSDK_USE_DEPRECATED_END
         [frs close];
         
         // update the cache
@@ -1378,6 +1402,7 @@ NSUInteger CACHES_COUNT_LIMIT = 1024;
 
 
 - (void)insertIntoSoupIndexMap:(NSArray*)soupIndexMapInserts withDb:(FMDatabase*)db {
+    SFSDK_USE_DEPRECATED_BEGIN // TODO: Remove in Mobile SDK 9.0
     // update the mapping table for this soup's columns
     for (NSDictionary *map in soupIndexMapInserts) {
         [self insertIntoTable:SOUP_INDEX_MAP_TABLE values:map withDb:db];
@@ -1392,7 +1417,7 @@ NSUInteger CACHES_COUNT_LIMIT = 1024;
         }
     }
     [self insertIntoTable:SOUP_ATTRS_TABLE values:soupMapValues withDb:db];
-
+    SFSDK_USE_DEPRECATED_END
     // Get a safe table name for the soupName
     NSString *soupTableName = [self tableNameBySoupId:[db lastInsertRowId]];
     if (nil == soupTableName) {
@@ -1414,7 +1439,9 @@ NSUInteger CACHES_COUNT_LIMIT = 1024;
     }
     
     NSNumber *soupId = [self soupIdFromTableName:soupTableName];
+    SFSDK_USE_DEPRECATED_BEGIN // TODO: Remove in Mobile SDK 9.0
     [self updateTable:SOUP_ATTRS_TABLE values:featuresMapValues entryId:soupId idCol:ID_COL withDb:db];
+    SFSDK_USE_DEPRECATED_END
 }
 
 - (BOOL)registerSoup:(NSString*)soupName withIndexSpecs:(NSArray*)indexSpecs {
@@ -1519,11 +1546,13 @@ NSUInteger CACHES_COUNT_LIMIT = 1024;
         }
         
         // for inserting into meta mapping table
-        NSMutableDictionary *values = [[NSMutableDictionary alloc] init ];
+        NSMutableDictionary *values = [[NSMutableDictionary alloc] init];
+        SFSDK_USE_DEPRECATED_BEGIN // TODO: Remove in Mobile SDK 9.0
         values[SOUP_NAME_COL] = soupSpec.soupName;
         values[PATH_COL] = indexSpec.path;
         values[COLUMN_NAME_COL] = columnName;
         values[COLUMN_TYPE_COL] = indexSpec.indexType;
+        SFSDK_USE_DEPRECATED_END
         [soupIndexMapInserts addObject:values];
         
         // for creating an index on the soup table
@@ -1603,11 +1632,13 @@ NSUInteger CACHES_COUNT_LIMIT = 1024;
         [self executeUpdateThrows:dropFtsSql withDb:db];
     }
     
+    SFSDK_USE_DEPRECATED_BEGIN // TODO: Remove in Mobile SDK 9.0
     NSString *deleteIndexSql = [NSString stringWithFormat:@"DELETE FROM %@ WHERE %@=\"%@\"",
                                 SOUP_INDEX_MAP_TABLE, SOUP_NAME_COL, soupName];
     [self executeUpdateThrows:deleteIndexSql withDb:db];
     NSString *deleteNameSql = [NSString stringWithFormat:@"DELETE FROM %@ WHERE %@=\"%@\"",
                                SOUP_ATTRS_TABLE, SOUP_NAME_COL, soupName];
+    SFSDK_USE_DEPRECATED_END
     [self executeUpdateThrows:deleteNameSql withDb:db];
     
     // Cleanup caches
@@ -1752,9 +1783,12 @@ NSUInteger CACHES_COUNT_LIMIT = 1024;
 
 - (NSArray *)queryWithQuerySpec:(SFQuerySpec *)querySpec pageIndex:(NSUInteger)pageIndex error:(NSError **)error;
 {
-    NSMutableString* resultString = [NSMutableString new];
-    if ([self queryAsString:resultString querySpec:querySpec pageIndex:pageIndex error:error]) {
-        return [SFJsonUtils objectFromJSONString:resultString];
+    __block NSMutableArray* resultArray = [NSMutableArray new];
+    BOOL succ = [self inDatabase:^(FMDatabase* db) {
+        [self runQuery:resultArray resultString:nil querySpec:querySpec pageIndex:pageIndex withDb:db];
+    } error:error];
+    if (succ) {
+        return resultArray;
     } else {
         return nil;
     }
@@ -1763,12 +1797,15 @@ NSUInteger CACHES_COUNT_LIMIT = 1024;
 - (BOOL) queryAsString:(NSMutableString*)resultString querySpec:(SFQuerySpec *)querySpec pageIndex:(NSUInteger)pageIndex error:(NSError **)error NS_SWIFT_NAME(query(result:querySpec:pageIndex:))
 {
     return [self inDatabase:^(FMDatabase* db) {
-        [self queryAsString:resultString querySpec:querySpec pageIndex:pageIndex withDb:db];
+        [self runQuery:nil resultString:resultString querySpec:querySpec pageIndex:pageIndex withDb:db];
     } error:error];
 }
 
-- (void)queryAsString:(NSMutableString*)resultString querySpec:(SFQuerySpec *)querySpec pageIndex:(NSUInteger)pageIndex withDb:(FMDatabase*)db
+- (void)runQuery:(NSMutableArray*)resultArray resultString:(NSMutableString*)resultString querySpec:(SFQuerySpec *)querySpec pageIndex:(NSUInteger)pageIndex withDb:(FMDatabase*)db
 {
+    NSAssert(resultArray != nil ^ resultString != nil, @"resultArray or resultString must be non-nil, but not both at the same times.");
+    BOOL computeResultAsString = resultString != nil;
+    
     // Page
     NSUInteger offsetRows = querySpec.pageSize * pageIndex;
     NSUInteger numberRows = querySpec.pageSize;
@@ -1790,81 +1827,128 @@ NSUInteger CACHES_COUNT_LIMIT = 1024;
         
         // Smart queries
         if (querySpec.queryType == kSFSoupQueryTypeSmart || querySpec.selectPaths != nil) {
-            NSMutableString *getDataFromRow = [[NSMutableString alloc] init];
-            [self getDataFromRowAsString:getDataFromRow resultSet:frs];
-            [resultStrings addObject:getDataFromRow];
+            if (computeResultAsString) {
+                NSMutableString *rowData = [NSMutableString new];
+                [self getDataFromRow:nil resultString:rowData resultSet:frs];
+                if (rowData) {
+                    [resultStrings addObject:rowData];
+                }
+            } else {
+                NSMutableArray *rowData = [NSMutableArray new];
+                [self getDataFromRow:rowData resultString:nil resultSet:frs];
+                if (rowData) {
+                    [resultArray addObject:rowData];
+                }
+            }
         }
         // Exact/like/range queries
         else {
-            for (int i = 0; i < frs.columnCount; i++) {
-                @autoreleasepool {
-                    NSString *columnName = [frs columnNameForIndex:i];
-                    if ([columnName isEqualToString:SOUP_COL]) {
-                        NSString *rawJson = [frs stringForColumnIndex:i];
-                        [resultStrings addObject:rawJson];
-                    }
-                    else if ([columnName isEqualToString:kSoupFeatureExternalStorage]) {
-                        NSString *tableName = [frs stringForColumnIndex:i];
-                        NSNumber *soupEntryId = @([frs longForColumnIndex:++i]);
-                        NSString *loadResult = [self loadExternalSoupEntryAsString:soupEntryId soupTableName:tableName];
-                        if (loadResult) {
-                            [resultStrings addObject:loadResult];
-                        }
-                    }
+            NSString* rawJson;
+            NSString *columnName = [frs columnNameForIndex:0];
+            if ([columnName isEqualToString:SOUP_COL]) {
+                rawJson = [frs stringForColumnIndex:0];
+            }
+            else if ([columnName isEqualToString:kSoupFeatureExternalStorage]) {
+                NSString *tableName = [frs stringForColumnIndex:0];
+                NSNumber *soupEntryId = @([frs longForColumnIndex:1]);
+                rawJson = [self loadExternalSoupEntryAsString:soupEntryId soupTableName:tableName];
+            }
+            
+            if (computeResultAsString) {
+                if (rawJson) {
+                    [resultStrings addObject:rawJson];
+                }
+            } else {
+                id entry = [SFJsonUtils objectFromJSONString:rawJson];
+                if (entry) {
+                    [resultArray addObject:entry];
                 }
             }
         }
     }
     [frs close];
-    [resultString appendString:@"["];
-    [resultString appendString:[resultStrings componentsJoinedByString:@","]];
-    [resultString appendString:@"]"];
+    
+    if (computeResultAsString) {
+        [resultString appendString:@"["];
+        [resultString appendString:[resultStrings componentsJoinedByString:@","]];
+        [resultString appendString:@"]"];
+    }
 }
 
-- (void) getDataFromRowAsString:(NSMutableString*)resultString resultSet:(FMResultSet*)frs
+- (void) getDataFromRow:(NSMutableArray*)resultArray resultString:(NSMutableString*)resultString resultSet:(FMResultSet*)frs
 {
+    NSAssert(resultArray != nil ^ resultString != nil, @"resultArray or resultString must be non-nil, but not both at the same times.");
+    BOOL computeResultAsString = resultString != nil;
     NSDictionary* valuesMap = [frs resultDictionary];
     NSMutableArray *resultStrings = [NSMutableArray array];
+    
     for (int i = 0; i < frs.columnCount; i++) {
         @autoreleasepool {
             NSString* columnName = [frs columnNameForIndex:i];
             id value = valuesMap[columnName];
-            if ([value isKindOfClass:[NSNull class]]) {
-                [resultStrings addObject:@"null"];
-            }
-            else if ([value isKindOfClass:[NSString class]] &&
-                     ([columnName isEqualToString:SOUP_COL] || [columnName hasPrefix:[NSString stringWithFormat:@"%@:", SOUP_COL]])) {
-                [resultStrings addObject:value];
-            }
-            else if ([columnName isEqualToString:kSoupFeatureExternalStorage]) {
-                NSNumber *soupEntryId = @([frs longForColumnIndex:++i]);
-                NSString *loadResult = [self loadExternalSoupEntryAsString:soupEntryId soupTableName:value];
-                if (loadResult) {
-                    [resultStrings addObject:loadResult];
+            
+            BOOL isSoupCol = [value isKindOfClass:[NSString class]] &&
+            ([columnName isEqualToString:SOUP_COL] || [columnName hasPrefix:[NSString stringWithFormat:@"%@:", SOUP_COL]]);
+            BOOL isExternalSoupCol = [columnName isEqualToString:kSoupFeatureExternalStorage];
+            
+            // If this is a soup column then the value is a serialized json
+            if (isSoupCol || isExternalSoupCol) {
+                if (isExternalSoupCol) {
+                    // Reading the actual value from external storage
+                    NSNumber *soupEntryId = @([frs longForColumnIndex:++i]);
+                    value = [self loadExternalSoupEntryAsString:soupEntryId soupTableName:value];
+                }
+
+                if (computeResultAsString) {
+                    if (value) {
+                        [resultStrings addObject:value];
+                    } else {
+                        // This is a smart query, we can't skip
+                        // If you do select x,y,z, then you expect 3 values per row in the result set
+                        [resultStrings addObject:@"null"];
+                    }
                 } else {
-                    // This is a smart query, we can't skip
-                    // If you do select x,y,z, then you expect 3 values per row in the result set
-                    [resultStrings addObject:@"null"];
+                    id entry = [SFJsonUtils objectFromJSONString:value];
+                    if (entry) {
+                        [resultArray addObject:entry];
+                    } else {
+                        // This is a smart query, we can't skip
+                        // If you do select x,y,z, then you expect 3 values per row in the result set
+                        [resultStrings addObject:[NSNull null]];
+                    }
                 }
             }
-            else if ([value isKindOfClass:[NSNumber class]]) {
-                [resultStrings addObject:[((NSNumber*)value) stringValue]];
-            }
-            else if ([value isKindOfClass:[NSString class]]) {
-                NSString *escapedAndQuotedValue = [self escapeStringValueAndQuote:(NSString*) value];
-                if (escapedAndQuotedValue) {
-                    [resultStrings addObject:escapedAndQuotedValue];
+            // Otherwise the value is an atomic type
+            else {
+                if (computeResultAsString) {
+                    if ([value isKindOfClass:[NSNull class]]) {
+                        [resultStrings addObject:@"null"];
+                    } else if ([value isKindOfClass:[NSNumber class]]) {
+                        [resultStrings addObject:[((NSNumber*)value) stringValue]];
+                    }
+                    else if ([value isKindOfClass:[NSString class]]) {
+                        NSString *escapedAndQuotedValue = [self escapeStringValueAndQuote:(NSString*) value];
+                        if (escapedAndQuotedValue) {
+                            [resultStrings addObject:escapedAndQuotedValue];
+                        } else {
+                            // This is a smart query, we can't skip
+                            // If you do select x,y,z, then you expect 3 values per row in the result set
+                            [resultStrings addObject:@"null"];
+                        }
+                    }
+
                 } else {
-                    // This is a smart query, we can't skip
-                    // If you do select x,y,z, then you expect 3 values per row in the result set
-                    [resultStrings addObject:@"null"];
+                    [resultArray addObject:value];
                 }
             }
         }
     }
-    [resultString appendString:@"["];
-    [resultString appendString:[resultStrings componentsJoinedByString:@","]];
-    [resultString appendString:@"]"];
+    
+    if (computeResultAsString) {
+        [resultString appendString:@"["];
+        [resultString appendString:[resultStrings componentsJoinedByString:@","]];
+        [resultString appendString:@"]"];
+    }
 }
 
 -(NSString*) escapeStringValueAndQuote:(NSString*) raw {
@@ -2034,9 +2118,11 @@ NSUInteger CACHES_COUNT_LIMIT = 1024;
 
     // fts
     if ([SFSoupIndex hasFts:indices]) {
+        SFSDK_USE_DEPRECATED_BEGIN // TODO: Remove in Mobile SDK 9.0
         NSMutableDictionary *ftsValues = [NSMutableDictionary dictionaryWithObjectsAndKeys:
                                           newEntryId, ROWID_COL,
                                           nil];
+        SFSDK_USE_DEPRECATED_END
         [self projectIndexedPaths:entry values:ftsValues indices:indices typeFilter:kValueExtractedToFtsColumn];
         [self insertIntoTable:[NSString stringWithFormat:@"%@_fts", soupTableName] values:ftsValues withDb:db];
     }
@@ -2093,7 +2179,9 @@ NSUInteger CACHES_COUNT_LIMIT = 1024;
     if ([SFSoupIndex hasFts:indices]) {
         NSMutableDictionary *ftsValues = [NSMutableDictionary new];
         [self projectIndexedPaths:entry values:ftsValues indices:indices typeFilter:kValueExtractedToFtsColumn];
+        SFSDK_USE_DEPRECATED_BEGIN // TODO: Remove in Mobile SDK 9.0
         [self updateTable:[NSString stringWithFormat:@"%@_fts", soupTableName] values:ftsValues entryId:entryId idCol:ROWID_COL withDb:db];
+        SFSDK_USE_DEPRECATED_END
     }
     
     return mutableEntry;
@@ -2238,8 +2326,10 @@ NSUInteger CACHES_COUNT_LIMIT = 1024;
 
         // fts
         if ([self hasFts:soupName withDb:db]) {
+            SFSDK_USE_DEPRECATED_BEGIN // TODO: Remove in Mobile SDK 9.0
             NSString *deleteFtsSql = [NSString stringWithFormat:@"DELETE FROM %@_fts WHERE %@", soupTableName, [self idsInPredicate:soupEntryIds idCol:ROWID_COL]];
             [self executeUpdateThrows:deleteFtsSql withDb:db];
+            SFSDK_USE_DEPRECATED_END
         }
 
         SFSoupSpec *soupSpec = [self attributesForSoup:soupName withDb:db];
@@ -2287,7 +2377,9 @@ NSUInteger CACHES_COUNT_LIMIT = 1024;
     [self executeUpdateThrows:deleteSql withArgumentsInArray:args withDb:db];
     // fts
     if ([self hasFts:soupName withDb:db]) {
+        SFSDK_USE_DEPRECATED_BEGIN // TODO: Remove in Mobile SDK 9.0
         NSString *deleteFtsSql = [NSString stringWithFormat:@"DELETE FROM %@_fts WHERE %@ in (%@)", soupTableName, ROWID_COL, querySql];
+        SFSDK_USE_DEPRECATED_END
         [self executeUpdateThrows:deleteFtsSql withDb:db];
     }
 
@@ -2469,7 +2561,9 @@ NSUInteger CACHES_COUNT_LIMIT = 1024;
                     NSMutableDictionary *ftsValues = [NSMutableDictionary dictionary];
                     [self projectIndexedPaths:entry values:ftsValues indices:indices typeFilter:kValueExtractedToFtsColumn];
                     if ([ftsValues count] > 0) {
+                        SFSDK_USE_DEPRECATED_BEGIN // TODO: Remove in Mobile SDK 9.0
                         [self updateTable:[NSString stringWithFormat:@"%@_fts", soupTableName] values:ftsValues entryId:entryId idCol:ROWID_COL withDb:db];
+                        SFSDK_USE_DEPRECATED_END
                     }
                 }
             }
@@ -2526,11 +2620,13 @@ NSUInteger CACHES_COUNT_LIMIT = 1024;
     [self inDatabase:^(FMDatabase *db) {
         if ([db tableExists:SOUP_NAMES_TABLE]) {
             // Renames SOUP_NAMES_TABLE to SOUP_ATTRS_TABLE
+            SFSDK_USE_DEPRECATED_BEGIN // TODO: Remove in Mobile SDK 9.0
             NSString *renameSoupNamesTableSql = [NSString stringWithFormat:
                                                  @"ALTER TABLE %@ RENAME TO %@",
                                                  SOUP_NAMES_TABLE,
                                                  SOUP_ATTRS_TABLE
                                                  ];
+            SFSDK_USE_DEPRECATED_END
             [SFSDKSmartStoreLogger d:[self class] format:@"renameSoupNamesTableSql: %@", renameSoupNamesTableSql];
             [self executeUpdateThrows:renameSoupNamesTableSql withDb:db];
         }
