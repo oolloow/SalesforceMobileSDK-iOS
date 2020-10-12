@@ -1134,6 +1134,21 @@ SFSDK_USE_DEPRECATED_END
     SFUserAccount *result = nil;
     [_accountsLock lock];
     result = (self.userAccountMap)[userIdentity];
+    
+    if (!result) {
+        [SFSDKCoreLogger e:[self class] message:@"SFUserAccount result nil when getting out of the map by key"];
+        
+        for (SFUserAccountIdentity* key in self.userAccountMap.allKeys) {
+            if ([key isEqual:userIdentity]) {
+                result = self.userAccountMap[key];
+            }
+        }
+        
+        if (!result) {
+            [SFSDKCoreLogger e:[self class] message:@"SFUserAccount result nil when getting out of the map by enumerating"];
+        }
+    }
+    
     [_accountsLock unlock];
     return result;
 }
@@ -1322,11 +1337,14 @@ SFSDK_USE_DEPRECATED_END
                 result = [unarchiver decodeObjectForKey:kUserDefaultsLastUserIdentityKey];
                 [unarchiver finishDecoding];
                 if (result) {
+                    [SFSDKCoreLogger e:[self class] format:@"Got SFIdentity result when getting current user: %@ %@", result.userId, result.orgId];
                     _currentUser = [self userAccountForUserIdentity:result];
                 } else {
                     [SFSDKCoreLogger e:[self class] format:@"Located current user Identity in NSUserDefaults but was not found in list of accounts managed by SFUserAccountManager."];
                 }
             }
+        } else {
+            [SFSDKCoreLogger e:[self class] message:@"resultData nil when getting current user"];
         }
         [_accountsLock unlock];
     }
