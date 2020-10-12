@@ -49,15 +49,15 @@
 		4FEE448A1BFD5CE500F09C43 /* SFSmartStoreTests.m in Sources */ = {isa = PBXBuildFile; fileRef = 4F96015E1BFD33B30022F021 /* SFSmartStoreTests.m */; };
 		4FF4DC671CF51D9300385C2C /* SFQuerySpecTests.m in Sources */ = {isa = PBXBuildFile; fileRef = 4FF4DC661CF51D9300385C2C /* SFQuerySpecTests.m */; };
 		4FFEE6351BFE98E100B7AA8A /* InfoPlist.strings in Resources */ = {isa = PBXBuildFile; fileRef = CEAAAE61195911E600CBBFE9 /* InfoPlist.strings */; };
-		828917841C52B705002F9981 /* FMDatabase.h in Headers */ = {isa = PBXBuildFile; fileRef = 8289177A1C52B705002F9981 /* FMDatabase.h */; };
+		828917841C52B705002F9981 /* FMDatabase.h in Headers */ = {isa = PBXBuildFile; fileRef = 8289177A1C52B705002F9981 /* FMDatabase.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		828917851C52B705002F9981 /* FMDatabase.m in Sources */ = {isa = PBXBuildFile; fileRef = 8289177B1C52B705002F9981 /* FMDatabase.m */; };
 		828917861C52B705002F9981 /* FMDatabaseAdditions.h in Headers */ = {isa = PBXBuildFile; fileRef = 8289177C1C52B705002F9981 /* FMDatabaseAdditions.h */; };
 		828917871C52B705002F9981 /* FMDatabaseAdditions.m in Sources */ = {isa = PBXBuildFile; fileRef = 8289177D1C52B705002F9981 /* FMDatabaseAdditions.m */; };
-		828917881C52B705002F9981 /* FMDatabasePool.h in Headers */ = {isa = PBXBuildFile; fileRef = 8289177E1C52B705002F9981 /* FMDatabasePool.h */; };
+		828917881C52B705002F9981 /* FMDatabasePool.h in Headers */ = {isa = PBXBuildFile; fileRef = 8289177E1C52B705002F9981 /* FMDatabasePool.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		828917891C52B705002F9981 /* FMDatabasePool.m in Sources */ = {isa = PBXBuildFile; fileRef = 8289177F1C52B705002F9981 /* FMDatabasePool.m */; };
 		8289178A1C52B705002F9981 /* FMDatabaseQueue.h in Headers */ = {isa = PBXBuildFile; fileRef = 828917801C52B705002F9981 /* FMDatabaseQueue.h */; };
 		8289178B1C52B705002F9981 /* FMDatabaseQueue.m in Sources */ = {isa = PBXBuildFile; fileRef = 828917811C52B705002F9981 /* FMDatabaseQueue.m */; };
-		8289178C1C52B705002F9981 /* FMResultSet.h in Headers */ = {isa = PBXBuildFile; fileRef = 828917821C52B705002F9981 /* FMResultSet.h */; };
+		8289178C1C52B705002F9981 /* FMResultSet.h in Headers */ = {isa = PBXBuildFile; fileRef = 828917821C52B705002F9981 /* FMResultSet.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		8289178D1C52B705002F9981 /* FMResultSet.m in Sources */ = {isa = PBXBuildFile; fileRef = 828917831C52B705002F9981 /* FMResultSet.m */; };
 		828917AD1C52DB6B002F9981 /* libsqlcipher.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 828917AC1C52DB6B002F9981 /* libsqlcipher.a */; };
 		829DA2AA1C1266F70040F5F1 /* SmartStore.h in Headers */ = {isa = PBXBuildFile; fileRef = 829DA2A91C1266F70040F5F1 /* SmartStore.h */; settings = {ATTRIBUTES = (Public, ); }; };
@@ -658,18 +658,18 @@
 				CE4CE4161C0E59DA009F6029 /* SFSmartStoreDatabaseManager+Internal.h in Headers */,
 				4F75745222B9A96900528BE2 /* SFSmartSqlCache.h in Headers */,
 				B78928412243DE5700BEDED4 /* SFSmartStore+Instrumentation.h in Headers */,
-				828917841C52B705002F9981 /* FMDatabase.h in Headers */,
 				CE4CE41B1C0E59DA009F6029 /* SFSmartStoreUpgrade+Internal.h in Headers */,
 				CE4CE40F1C0E59DA009F6029 /* SFSmartSqlHelper.h in Headers */,
 				829DA2AA1C1266F70040F5F1 /* SmartStore.h in Headers */,
 				CE4CE4111C0E59DA009F6029 /* SFSmartStore.h in Headers */,
 				4F883C761C16279F007D4BAE /* SmartStoreSDKManager.h in Headers */,
 				CE682C801F01B5E3003C43C0 /* SFSDKSmartStoreLogger.h in Headers */,
+				828917841C52B705002F9981 /* FMDatabase.h in Headers */,
 				828917881C52B705002F9981 /* FMDatabasePool.h in Headers */,
+				8289178C1C52B705002F9981 /* FMResultSet.h in Headers */,
 				CE4CE4191C0E59DA009F6029 /* SFSmartStoreUpgrade.h in Headers */,
 				CE4CE40B1C0E59DA009F6029 /* SFAlterSoupLongOperation.h in Headers */,
 				CE4CE4141C0E59DA009F6029 /* SFSmartStoreDatabaseManager.h in Headers */,
-				8289178C1C52B705002F9981 /* FMResultSet.h in Headers */,
 				CE4CE5691C0E7845009F6029 /* SmartStore-Prefix.pch in Headers */,
 				828917861C52B705002F9981 /* FMDatabaseAdditions.h in Headers */,
 				CE4CE40D1C0E59DA009F6029 /* SFQuerySpec.h in Headers */,
@@ -1061,6 +1061,7 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				CLANG_ALLOW_NON_MODULAR_INCLUDES_IN_FRAMEWORK_MODULES = YES;
 				CLANG_WARN_UNREACHABLE_CODE = YES;
 				CODE_SIGN_ENTITLEMENTS = SmartStoreTestApp/SmartStoreTestApp.entitlements;
 				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Developer";
@@ -1087,6 +1088,7 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				CLANG_ALLOW_NON_MODULAR_INCLUDES_IN_FRAMEWORK_MODULES = YES;
 				CLANG_WARN_UNREACHABLE_CODE = YES;
 				CODE_SIGN_ENTITLEMENTS = SmartStoreTestApp/SmartStoreTestApp.entitlements;
 				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Developer";
@@ -1115,6 +1117,7 @@
 			baseConfigurationReference = CECB66231C1BB886008038AE /* SmartStore-Dynamic-iOS-Debug.xcconfig */;
 			buildSettings = {
 				BUILD_VERSION_SUFFIX = "";
+				CLANG_ALLOW_NON_MODULAR_INCLUDES_IN_FRAMEWORK_MODULES = YES;
 				CLANG_ANALYZER_NONNULL = YES;
 				CLANG_WARN_UNREACHABLE_CODE = YES;
 				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
@@ -1149,6 +1152,7 @@
 			baseConfigurationReference = CECB66241C1BB886008038AE /* SmartStore-Dynamic-iOS-Release.xcconfig */;
 			buildSettings = {
 				BUILD_VERSION_SUFFIX = "";
+				CLANG_ALLOW_NON_MODULAR_INCLUDES_IN_FRAMEWORK_MODULES = YES;
 				CLANG_ANALYZER_NONNULL = YES;
 				CLANG_WARN_UNREACHABLE_CODE = YES;
 				COPY_PHASE_STRIP = NO;
@@ -1283,6 +1287,7 @@
 			baseConfigurationReference = 4F96FC501BFD31EF0022F021 /* SmartStore-Test.xcconfig */;
 			buildSettings = {
 				APPLICATION_EXTENSION_API_ONLY = NO;
+				CLANG_ALLOW_NON_MODULAR_INCLUDES_IN_FRAMEWORK_MODULES = YES;
 				CLANG_ENABLE_MODULES = YES;
 				GCC_PRECOMPILE_PREFIX_HEADER = YES;
 				GCC_PREFIX_HEADER = "SmartStore/SmartStore-Prefix.pch";
@@ -1316,6 +1321,7 @@
 			baseConfigurationReference = 4F96FC501BFD31EF0022F021 /* SmartStore-Test.xcconfig */;
 			buildSettings = {
 				APPLICATION_EXTENSION_API_ONLY = NO;
+				CLANG_ALLOW_NON_MODULAR_INCLUDES_IN_FRAMEWORK_MODULES = YES;
 				CLANG_ENABLE_MODULES = YES;
 				GCC_PRECOMPILE_PREFIX_HEADER = YES;
 				GCC_PREFIX_HEADER = "SmartStore/SmartStore-Prefix.pch";
