@@ -26,7 +26,7 @@
  */
 
 #import "SFSDKPasscodeTextField.h"
-#import "UIColor+SFSDKPasscodeView.h"
+#import "UIColor+SFColors.h"
 #import "SFSDKAppLockViewConfig.h"
 
 static CGFloat      const kDefaultLineWidth                  = 1;
@@ -39,6 +39,7 @@ static CGFloat      const kPasscodeCircleDiameter            = 22.f;
 @interface SFSDKPasscodeTextField()
 @property (nonatomic, strong) UIColor * fillColor;
 @property (nonatomic,strong) NSMutableArray *subLayerRefs;
+@property (nonatomic, strong) SFSDKAppLockViewConfig *viewConfig;
 @end
 
 @implementation SFSDKPasscodeTextField
@@ -57,17 +58,33 @@ static CGFloat      const kPasscodeCircleDiameter            = 22.f;
 {
     if (self = [super initWithFrame:frame]) {
         _subLayerRefs = [[NSMutableArray alloc] init];
+        SFSDK_USE_DEPRECATED_BEGIN // TODO: Remove in Mobile SDK 9.0
         _passcodeLength = config.passcodeLength;
         _passcodeLengthKnown = (config.passcodeLength != 0);
+        SFSDK_USE_DEPRECATED_END
+        _viewConfig = config;
         self.keyboardType = UIKeyboardTypeNumberPad;
-        self.backgroundColor = config.secondaryColor;
+        self.backgroundColor = config.secondaryBackgroundColor;
         self.tintColor = [UIColor clearColor];
         self.borderStyle = UITextBorderStyleNone;
-        self.layer.borderColor = config.borderColor.CGColor;
         self.fillColor = config.primaryColor;
         self.textColor = config.secondaryColor;
+        [self updateLayerColor];
     }
     return self;
+}
+
+- (void)updateLayerColor {
+    self.layer.borderColor = self.viewConfig.borderColor.CGColor;
+}
+
+- (void)traitCollectionDidChange:(UITraitCollection *)previousTraitCollection {
+    [super traitCollectionDidChange:previousTraitCollection];
+    if (@available(iOS 13.0, *)) {
+        if ([self.traitCollection hasDifferentColorAppearanceComparedToTraitCollection:previousTraitCollection]) {
+            [self updateLayerColor];
+        }
+    }
 }
 
 - (void)clearPasscode {

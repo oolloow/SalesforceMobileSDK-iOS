@@ -51,8 +51,6 @@ static NSString * const kSFAppFeatureAiltnEnabled = @"AI";
 
 static NSMutableDictionary *analyticsManagerList = nil;
 
-UIBackgroundTaskIdentifier task;
-
 @implementation SFSDKSalesforceAnalyticsManager
 
 + (void)initialize {
@@ -149,7 +147,7 @@ UIBackgroundTaskIdentifier task;
         _analyticsManager = [[SFSDKAnalyticsManager alloc] initWithStoreDirectory:rootStoreDir dataEncryptorBlock:dataEncryptorBlock dataDecryptorBlock:dataDecryptorBlock deviceAttributes:deviceAttributes];
         _eventStoreManager = self.analyticsManager.storeManager;
         _remotes = [[NSMutableArray alloc] init];
-        
+        _task = UIBackgroundTaskInvalid;
         // There's no standard for unauthenticated instrumentation publishing, currently.  Consumers
         // should explicitly specify their own.
         if (_userAccount != nil) {
@@ -314,33 +312,36 @@ UIBackgroundTaskIdentifier task;
 - (void) publishOnAppBackground {
 
     // Publishing should only happen for the current user, not for all users signed in.
-//    if (![self.userAccount.accountIdentity isEqual:[SFUserAccountManager sharedInstance].currentUser.accountIdentity]) {
-//        return;
-//    }
-//    dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
-//        __block typeof(self) weakSelf = self;
-//        task = [[SFApplicationHelper sharedApplication] beginBackgroundTaskWithName:NSStringFromClass([self class]) expirationHandler:^{
-//            [weakSelf cleanupBackgroundTask];
-//        }];
-//        [self publishAllEvents];
-//    });
+    // if (![self.userAccount.accountIdentity isEqual:[SFUserAccountManager sharedInstance].currentUser.accountIdentity]) {
+    //     return;
+    // }
+    // // Avoid re-entrance if task is active
+    // if (self.task == UIBackgroundTaskInvalid) {
+    //     dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
+    //         __block typeof(self) weakSelf = self;
+    //         weakSelf.task = [[SFApplicationHelper sharedApplication] beginBackgroundTaskWithName:NSStringFromClass([self class]) expirationHandler:^{
+    //             [weakSelf cleanupBackgroundTask];
+    //         }];
+    //         [self publishAllEvents];
+    //     });
+    // }
 }
 
-//- (void) applyTransformAndPublish:(SFSDKAnalyticsTransformPublisherPair *)tpp events:(NSArray<SFSDKInstrumentationEvent *> *) events publishCompleteBlock:(PublishCompleteBlock) publishCompleteBlock {
-//    if (tpp) {
-//        NSMutableArray *eventsArray = [[NSMutableArray alloc] init];
-//        for (SFSDKInstrumentationEvent *event in events) {
-//            id transformedEvent = [tpp.transform transform:event];
-//            if (transformedEvent != nil) {
-//                [eventsArray addObject:transformedEvent];
-//            }
-//        }
-//        id<SFSDKAnalyticsPublisher> networkPublisher = tpp.publisher;
-//        if (networkPublisher) {
-//            [networkPublisher publish:eventsArray publishCompleteBlock:publishCompleteBlock];
-//        }
-//    }
-//}
+- (void) applyTransformAndPublish:(SFSDKAnalyticsTransformPublisherPair *)tpp events:(NSArray<SFSDKInstrumentationEvent *> *) events publishCompleteBlock:(PublishCompleteBlock) publishCompleteBlock {
+    if (tpp) {
+        NSMutableArray *eventsArray = [[NSMutableArray alloc] init];
+        for (SFSDKInstrumentationEvent *event in events) {
+            id transformedEvent = [tpp.transform transform:event];
+            if (transformedEvent != nil) {
+                [eventsArray addObject:transformedEvent];
+            }
+        }
+        id<SFSDKAnalyticsPublisher> networkPublisher = tpp.publisher;
+        if (networkPublisher) {
+            [networkPublisher publish:eventsArray user:self.userAccount publishCompleteBlock:publishCompleteBlock];
+        }
+    }
+}
 
 #pragma mark - SFUserAccountManagerDelegate
 - (void)handleUserWillLogout:(NSNotification *)notification {
@@ -356,8 +357,8 @@ UIBackgroundTaskIdentifier task;
 }
 
 - (void) cleanupBackgroundTask {
-//    [[SFApplicationHelper sharedApplication] endBackgroundTask:task];
-//    task = UIBackgroundTaskInvalid;
+    // [[SFApplicationHelper sharedApplication] endBackgroundTask:self.task];
+    // self.task = UIBackgroundTaskInvalid;
 }
 @end
 

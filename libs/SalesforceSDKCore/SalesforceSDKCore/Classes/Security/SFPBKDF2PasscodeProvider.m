@@ -40,7 +40,11 @@ static NSString * const kPBKDFArchiveDataKey = @"pbkdfDataArchive";
 
 @end
 
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wdeprecated-implementations"
 @implementation SFPBKDF2PasscodeProvider
+#pragma clang diagnostic pop
+
 @synthesize passcodeLength;
 @synthesize saltLengthInBytes = _saltLengthInBytes;
 @synthesize numDerivationRounds = _numDerivationRounds;
@@ -165,22 +169,28 @@ static NSString * const kPBKDFArchiveDataKey = @"pbkdfDataArchive";
         return nil;
     }
     
-    NSKeyedUnarchiver *unarchiver = [[NSKeyedUnarchiver alloc] initForReadingWithData:keychainPasscodeData];
-    SFPBKDFData *pbkdfData = [unarchiver decodeObjectForKey:kPBKDFArchiveDataKey];
-    [unarchiver finishDecoding];
+    SFPBKDFData *pbkdfData = nil;
+    NSError* error = nil;
+    NSKeyedUnarchiver *unarchiver = [[NSKeyedUnarchiver alloc] initForReadingFromData:keychainPasscodeData error:&error];
+    unarchiver.requiresSecureCoding = NO;
+    if (error) {
+        [SFSDKCoreLogger e:[self class] format:@"Failed to init unarchiver for passcode data: %@.", error];
+    } else {
+        pbkdfData = [unarchiver decodeObjectForKey:kPBKDFArchiveDataKey];
+        [unarchiver finishDecoding];
+    }
     
     return pbkdfData;
 }
 
 - (void)setPasscodeData:(SFPBKDFData *)passcodeData keychainId:(NSString *)keychainIdentifier
 {
-    NSMutableData *passcodeDataObj = [NSMutableData data];
-    NSKeyedArchiver *archiver = [[NSKeyedArchiver alloc] initForWritingWithMutableData:passcodeDataObj];
+    NSKeyedArchiver *archiver = [[NSKeyedArchiver alloc] initRequiringSecureCoding:NO];
     [archiver encodeObject:passcodeData forKey:kPBKDFArchiveDataKey];
     [archiver finishEncoding];
     
     SFKeychainItemWrapper *keychainWrapper = [SFKeychainItemWrapper itemWithIdentifier:keychainIdentifier account:nil];
-    [keychainWrapper setValueData:passcodeDataObj];
+    [keychainWrapper setValueData:archiver.encodedData];
 }
 
 - (NSUInteger)passcodeLength

@@ -35,6 +35,8 @@
 @property (nonatomic, strong, readwrite) NSString *storeDirectory;
 @property (nonatomic, strong, readwrite) DataEncryptorBlock dataEncryptorBlock;
 @property (nonatomic, strong, readwrite) DataDecryptorBlock dataDecryptorBlock;
+@property (nonatomic, assign, readwrite) NSInteger numStoredEvents;
+@property (nonatomic, strong, readwrite) NSObject *eventCountMutex;
 
 @end
 
@@ -64,55 +66,58 @@
                 return data;
             };
         }
+
+        // Gets current number of events stored.
+        self.eventCountMutex = [[NSObject alloc] init];
+        self.numStoredEvents = 0;
+        NSArray *files = [[NSFileManager defaultManager] contentsOfDirectoryAtPath:self.storeDirectory error:nil];
+        if (files) {
+            self.numStoredEvents = files.count;
+        }
     }
     return self;
 }
 
 - (void) storeEvent:(SFSDKInstrumentationEvent *) event {
-//    if (!event) {
-//        return;
-//    }
-//
-//    // Copies event, to isolate data for I/O.
-//    SFSDKInstrumentationEvent *eventCopy = [event copy];
-//    if (!eventCopy || ![eventCopy jsonRepresentation]) {
-//        return;
-//    }
-//    if (![self shouldStoreEvent]) {
-//        return;
-//    }
-//    NSData *encryptedData = self.dataEncryptorBlock([eventCopy jsonRepresentation]);
-//    NSError *error = nil;
-//    if (encryptedData) {
-//        NSString *filename = [self filenameForEvent:eventCopy.eventId];
-//        NSString *parentDir = [filename stringByDeletingLastPathComponent];
-//        [[NSFileManager defaultManager] createDirectoryAtPath:parentDir withIntermediateDirectories:YES attributes: @{ NSFileProtectionKey: NSFileProtectionCompleteUntilFirstUserAuthentication } error:&error];
-//        [encryptedData writeToFile:filename options:NSDataWritingFileProtectionCompleteUntilFirstUserAuthentication error:&error];
-//        if (error) {
-//            [SFSDKAnalyticsLogger w:[self class] format:@"Error occurred while writing to file: %@", error.localizedDescription];
-//        }
-//    }
+    // if (!event) {
+    //     return;
+    // }
+
+    // // Copies event, to isolate data for I/O.
+    // SFSDKInstrumentationEvent *eventCopy = [event copy];
+    // if (!eventCopy) {
+    //     return;
+    // }
+    // if (![self shouldStoreEvent]) {
+    //     return;
+    // }
+    // NSData *encryptedData = self.dataEncryptorBlock([eventCopy jsonRepresentation]);
+    // NSError *error = nil;
+    // if (encryptedData) {
+    //     NSString *filename = [self filenameForEvent:eventCopy.eventId];
+    //     NSString *parentDir = [filename stringByDeletingLastPathComponent];
+    //     [[NSFileManager defaultManager] createDirectoryAtPath:parentDir withIntermediateDirectories:YES attributes: @{ NSFileProtectionKey: NSFileProtectionCompleteUntilFirstUserAuthentication } error:&error];
+    //     [encryptedData writeToFile:filename options:NSDataWritingFileProtectionCompleteUntilFirstUserAuthentication error:&error];
+    //     if (error) {
+    //         [SFSDKAnalyticsLogger w:[self class] format:@"Error occurred while writing to file: %@", error.localizedDescription];
+    //     } else {
+    //         @synchronized (self.eventCountMutex) {
+    //             self.numStoredEvents++;
+    //         }
+    //     }
+    // }
 }
 
 - (void) storeEvents:(NSArray<SFSDKInstrumentationEvent *> *) events {
-    if (!events || [events count] == 0) {
-        return;
-    }
-    if (![self shouldStoreEvent]) {
-        return;
-    }
-    for (SFSDKInstrumentationEvent* event in events) {
-        [self storeEvent:event];
-    }
-}
-
-- (NSInteger) numStoredEvents {
-    NSArray *files = [[NSFileManager defaultManager] contentsOfDirectoryAtPath:self.storeDirectory error:nil];
-    NSInteger fileCount = 0;
-    if (files) {
-        fileCount = files.count;
-    }
-    return fileCount;
+    // if (!events || [events count] == 0) {
+    //     return;
+    // }
+    // if (![self shouldStoreEvent]) {
+    //     return;
+    // }
+    // for (SFSDKInstrumentationEvent* event in events) {
+    //     [self storeEvent:event];
+    // }
 }
 
 - (SFSDKInstrumentationEvent *) fetchEvent:(NSString *) eventId {
@@ -141,8 +146,15 @@
     }
     NSFileManager *fileManager = [NSFileManager defaultManager];
     NSString *filePath = [self filenameForEvent:eventId];
+    BOOL success = NO;
     if ([fileManager fileExistsAtPath:filePath]) {
-        return [fileManager removeItemAtPath:filePath error:nil];
+        success = [fileManager removeItemAtPath:filePath error:nil];
+        if (success) {
+            @synchronized (self.eventCountMutex) {
+                self.numStoredEvents--;
+            }
+        }
+        return success;
     }
     return NO;
 }
@@ -157,23 +169,29 @@
 }
 
 - (void) deleteAllEvents {
-    NSArray *files = [[NSFileManager defaultManager] contentsOfDirectoryAtPath:self.storeDirectory error:nil];
+    NSFileManager *fileManager = [NSFileManager defaultManager];
+    NSArray *files = [fileManager contentsOfDirectoryAtPath:self.storeDirectory error:nil];
     for (NSString *file in files) {
-        NSFileManager *fileManager = [NSFileManager defaultManager];
         NSString *filePath = [self filenameForEvent:file];
         if ([fileManager fileExistsAtPath:filePath]) {
             [fileManager removeItemAtPath:filePath error:nil];
         }
     }
+    @synchronized (self.eventCountMutex) {
+        self.numStoredEvents = 0;
+    }
 }
 
 - (BOOL) shouldStoreEvent {
-    NSArray *files = [[NSFileManager defaultManager] contentsOfDirectoryAtPath:self.storeDirectory error:nil];
-    NSInteger fileCount = 0;
-    if (files) {
-        fileCount = files.count;
+    return (self.isLoggingEnabled && (self.numStoredEvents < self.maxEvents));
+}
+
+- (BOOL) isLoggingEnabled {
+    BOOL globalAnalyticsDisabled = [[[NSBundle mainBundle] objectForInfoDictionaryKey:@"SFDCAnalyticsDisabled"] boolValue];
+    if (globalAnalyticsDisabled) {
+        return NO;
     }
-    return (self.isLoggingEnabled && (fileCount < self.maxEvents));
+    return _loggingEnabled;
 }
 
 - (SFSDKInstrumentationEvent *) fetchEventFromFile:(NSString *) file {

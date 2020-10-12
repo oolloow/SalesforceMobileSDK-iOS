@@ -2,9 +2,9 @@
  SalesforceSDKCore.h
  SalesforceSDKCore
 
- Created by Raj Rao on Thu Jul 25 08:08:04 PDT 2019.
+ Created by Brianna Birman on Wed Jul  8 11:59:21 PDT 2020.
 
- Copyright (c) 2019-present, salesforce.com, inc. All rights reserved.
+ Copyright (c) 2020-present, salesforce.com, inc. All rights reserved.
  
  Redistribution and use of this software in source and binary forms, with or without modification,
  are permitted provided that the following conditions are met:
@@ -30,6 +30,7 @@
 #import <SalesforceSDKCore/SFDefaultUserManagementDetailViewController.h>
 #import <SalesforceSDKCore/SFSDKCoreLogger.h>
 #import <SalesforceSDKCore/SFKeyStoreKey.h>
+#import <SalesforceSDKCore/SFFormatUtils.h>
 #import <SalesforceSDKCore/SFCryptChunks.h>
 #import <SalesforceSDKCore/SFSDKAlertMessageBuilder.h>
 #import <SalesforceSDKCore/SFSHA256PasscodeProvider.h>
@@ -45,25 +46,30 @@
 #import <SalesforceSDKCore/SFSecurityLockout.h>
 #import <SalesforceSDKCore/SFSDKDevInfoViewController.h>
 #import <SalesforceSDKCore/SFSDKUserSelectionNavViewController.h>
+#import <SalesforceSDKCore/SFRestAPI+Notifications.h>
 #import <SalesforceSDKCore/SFSDKInstrumentationHelper.h>
 #import <SalesforceSDKCore/SFSDKAsyncProcessListener.h>
 #import <SalesforceSDKCore/SFSDKTestRequestListener.h>
 #import <SalesforceSDKCore/UIColor+SFColors.h>
 #import <SalesforceSDKCore/SFSDKLoginHostDelegate.h>
 #import <SalesforceSDKCore/SFPasscodeProviderManager.h>
+#import <SalesforceSDKCore/SFSDKPushNotificationError.h>
 #import <SalesforceSDKCore/SFOAuthCoordinator.h>
 #import <SalesforceSDKCore/SFSDKOAuth2.h>
 #import <SalesforceSDKCore/SFKeyStoreManager.h>
 #import <SalesforceSDKCore/SFKeychainItemWrapper.h>
 #import <SalesforceSDKCore/SFOAuthOrgAuthConfiguration.h>
+#import <SalesforceSDKCore/SFSDKCompositeResponse.h>
 #import <SalesforceSDKCore/SFOAuthCredentials.h>
 #import <SalesforceSDKCore/SFUserAccountManager.h>
 #import <SalesforceSDKCore/SFUserAccount.h>
+#import <SalesforceSDKCore/SFSDKBatchRequest.h>
 #import <SalesforceSDKCore/SFSDKAppLockViewConfig.h>
 #import <SalesforceSDKCore/SFSDKWindowManager.h>
 #import <SalesforceSDKCore/NSNotificationCenter+SFAdditions.h>
 #import <SalesforceSDKCore/SFEncryptionKey.h>
 #import <SalesforceSDKCore/SFDirectoryManager.h>
+#import <SalesforceSDKCore/SFSDKPushNotificationDecryption.h>
 #import <SalesforceSDKCore/SFSDKAILTNPublisher.h>
 #import <SalesforceSDKCore/SFSDKLoginHost.h>
 #import <SalesforceSDKCore/SFSDKTestCredentialsData.h>
@@ -72,6 +78,7 @@
 #import <SalesforceSDKCore/SFSDKUserSelectionView.h>
 #import <SalesforceSDKCore/SFPasscodeManager+Internal.h>
 #import <SalesforceSDKCore/SFPBKDF2PasscodeProvider.h>
+#import <SalesforceSDKCore/NSURLResponse+SFAdditions.h>
 #import <SalesforceSDKCore/SFSDKAuthViewHandler.h>
 #import <SalesforceSDKCore/SFApplicationHelper.h>
 #import <SalesforceSDKCore/SFDefaultUserManagementViewController.h>
@@ -82,6 +89,7 @@
 #import <SalesforceSDKCore/SFUserActivityMonitor.h>
 #import <SalesforceSDKCore/SFSDKWindowContainer.h>
 #import <SalesforceSDKCore/SFPasscodeKeyStore.h>
+#import <SalesforceSDKCore/SFSDKCompositeRequest.h>
 #import <SalesforceSDKCore/SFSDKLoginHostListViewController.h>
 #import <SalesforceSDKCore/SFSDKAnalyticsPublisher.h>
 #import <SalesforceSDKCore/SFSDKAppConfig.h>
@@ -89,7 +97,6 @@
 #import <SalesforceSDKCore/SFSDKEventBuilderHelper.h>
 #import <SalesforceSDKCore/SFSDKSoqlBuilder.h>
 #import <SalesforceSDKCore/NSString+SFAdditions.h>
-#import <SalesforceSDKCore/SFSDKAuthErrorManager.h>
 #import <SalesforceSDKCore/NSData+SFSDKUtils.h>
 #import <SalesforceSDKCore/UIScreen+SFAdditions.h>
 #import <SalesforceSDKCore/SFRestAPI+QueryBuilder.h>
@@ -105,6 +112,7 @@
 #import <SalesforceSDKCore/SFOAuthKeychainCredentials.h>
 #import <SalesforceSDKCore/TestSetupUtils.h>
 #import <SalesforceSDKCore/SalesforceSDKManager.h>
+#import <SalesforceSDKCore/SFSDKBatchResponse.h>
 #import <SalesforceSDKCore/NSURL+SFStringUtils.h>
 #import <SalesforceSDKCore/SFInactivityTimerCenter.h>
 #import <SalesforceSDKCore/SFPBKDFData.h>
@@ -117,26 +125,25 @@
 #import <SalesforceSDKCore/NSDictionary+SFAdditions.h>
 #import <SalesforceSDKCore/SalesforceSDKCoreDefines.h>
 #import <SalesforceSDKCore/SFAuthErrorHandlerList.h>
-#import <SalesforceSDKCore/SFAuthErrorHandler.h>
 #import <SalesforceSDKCore/SFDefaultUserManagementListViewController.h>
 #import <SalesforceSDKCore/SFSDKWebViewStateManager.h>
-#import <SalesforceSDKCore/SFCommunityData.h>
 #import <SalesforceSDKCore/SFPushNotificationManager.h>
 #import <SalesforceSDKCore/SFSDKViewController.h>
 #import <SalesforceSDKCore/NSObject+SFBlocks.h>
+#import <SalesforceSDKCore/SFSDKViewControllerConfig.h>
 #import <SalesforceSDKCore/SFNetwork.h>
 #import <SalesforceSDKCore/SFIdentityData.h>
 #import <SalesforceSDKCore/SFPreferences.h>
 #import <SalesforceSDKCore/SFSDKWebUtils.h>
 #import <SalesforceSDKCore/SFRestAPI+Files.h>
 #import <SalesforceSDKCore/SFSDKLoginViewControllerConfig.h>
-#import <SalesforceSDKCore/SFOAuthCrypto.h>
 #import <SalesforceSDKCore/SFUserAccountConstants.h>
 #import <SalesforceSDKCore/SFOAuthSessionRefresher.h>
 #import <SalesforceSDKCore/SFSDKResourceUtils.h>
 #import <SalesforceSDKCore/SFSDKCryptoUtils.h>
 #import <SalesforceSDKCore/SFAppLockViewControllerTypes.h>
 #import <SalesforceSDKCore/SFSecurityLockout+Internal.h>
+#import <SalesforceSDKCore/SFSDKPushNotificationFieldsConstants.h>
 #import <SalesforceSDKCore/UIDevice+SFHardware.h>
 #import <SalesforceSDKCore/SFSDKLoginFlowSelectionView.h>
 #import <SalesforceSDKCore/SFMethodInterceptor.h>
