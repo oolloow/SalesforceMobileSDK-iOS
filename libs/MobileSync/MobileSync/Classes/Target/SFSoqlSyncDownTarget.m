@@ -143,9 +143,15 @@ static NSString * const kSFSoqlSyncTargetQuery = @"query";
         [SFMobileSyncNetworkUtils sendRequestWithMobileSyncUserAgent:request failureBlock:^(id response, NSError *e, NSURLResponse *rawResponse) {
             errorBlock(e);
         } successBlock:^(NSDictionary *responseJson, NSURLResponse *rawResponse) {
-            __strong typeof(weakSelf) strongSelf = weakSelf;
-            strongSelf.nextRecordsUrl = responseJson[kResponseNextRecordsUrl];
-            completeBlock([strongSelf getRecordsFromResponse:responseJson]);
+            if ([responseJson isKindOfClass:[NSDictionary class]] || [responseJson isKindOfClass:[NSMutableDictionary class]]) {
+                __strong typeof(weakSelf) strongSelf = weakSelf;
+                strongSelf.nextRecordsUrl = responseJson[kResponseNextRecordsUrl];
+                completeBlock([strongSelf getRecordsFromResponse:responseJson]);
+            } else {
+                NSDictionary *errorDictionary = @{ NSLocalizedDescriptionKey : @"Non dictionary response received when continuing fetch" };
+                NSError *er = [[NSError alloc] initWithDomain:NSURLErrorDomain code:-1 userInfo:errorDictionary];
+                errorBlock(er);
+            }
         }];
     } else {
         completeBlock(nil);

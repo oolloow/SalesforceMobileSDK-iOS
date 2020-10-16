@@ -1078,17 +1078,19 @@ SFSDK_USE_DEPRECATED_END
 }
 
 - (void)computeWebViewUserAgent {
-    static dispatch_once_t onceToken;
-    self.webView = [[WKWebView alloc] initWithFrame:CGRectZero];
-    [self.webView loadHTMLString:@"<html></html>" baseURL:nil];
-    __weak typeof(self) weakSelf = self;
-    dispatch_once_on_main_thread(&onceToken, ^{
-        __strong typeof(weakSelf) strongSelf = weakSelf;
-        [strongSelf.webView evaluateJavaScript:@"navigator.userAgent" completionHandler:^(id __nullable userAgent, NSError * __nullable error) {
-            strongSelf.webViewUserAgent = userAgent;
-            strongSelf.webView = nil;
-        }];
-    });
+    // OW customisation. we do not need this.
+    self.webViewUserAgent = @"";
+//    static dispatch_once_t onceToken;
+//    self.webView = [[WKWebView alloc] initWithFrame:CGRectZero];
+//    [self.webView loadHTMLString:@"<html></html>" baseURL:nil];
+//    __weak typeof(self) weakSelf = self;
+//    dispatch_once_on_main_thread(&onceToken, ^{
+//        __strong typeof(weakSelf) strongSelf = weakSelf;
+//        [strongSelf.webView evaluateJavaScript:@"navigator.userAgent" completionHandler:^(id __nullable userAgent, NSError * __nullable error) {
+//            strongSelf.webViewUserAgent = userAgent;
+//            strongSelf.webView = nil;
+//        }];
+//    });
 }
 
 void dispatch_once_on_main_thread(dispatch_once_t *predicate, dispatch_block_t block) {
