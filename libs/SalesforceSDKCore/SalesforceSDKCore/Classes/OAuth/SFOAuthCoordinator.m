@@ -639,6 +639,7 @@
 }
 
 - (NSString *)generateApprovalUrlString {
+    [self.credentials applyRedirectWorkaround];
     return [self generateApprovalUrlString:self.credentials];
 }
 
