@@ -120,12 +120,12 @@ static NSString * const kKeyStoreDecryptionFailedMessage = @"Could not decrypt k
         // Pre SDK 7.1 SFGeneratedKeyStore were encrypted with SFEncryptionKey
         // Starting in SDK 7.1, we use SFSecureEncryptionKey instead
         // Switch to SFSecureEncryptionKey if needed
-        [self switchToSecureKeyIfNeeded:self.generatedKeyStore];
+        // [self switchToSecureKeyIfNeeded:self.generatedKeyStore];
         
         // Pre SDK 6.0 code would store keys with keytype passcode in generated store if there was no passcode enabled
         // Starting with SDK 6.0, we don't pass the keytype anymore (it's always generated)
         // For things to work, we need to rename keys named xxx__Passcode to xxx__Generated
-        [self renameKeysWithKeyTypePasscode:self.generatedKeyStore];
+        // [self renameKeysWithKeyTypePasscode:self.generatedKeyStore];
     }
 }
 
