@@ -118,6 +118,7 @@ static const NSUInteger SFUserAccountManagerCannotWriteUserData = 10004;
                         } else {
                             // Error logging will already have occurred.  Make sure account file data is removed.
                             [fm removeItemAtPath:userAccountPath error:nil];
+                            [SFSDKCoreLogger e:[self class] format:@"Deleting user account as we could not load it from file: %@", userAccountPath];
                         }
                     } else {
                         [SFSDKCoreLogger d:[self class] format:@"There is no user account file in this user directory: %@", orgPath];
