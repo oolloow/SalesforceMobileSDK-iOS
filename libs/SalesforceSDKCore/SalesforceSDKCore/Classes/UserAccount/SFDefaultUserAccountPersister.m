@@ -112,7 +112,13 @@ static const NSUInteger SFUserAccountManagerCannotWriteUserData = 10004;
                     NSString *userAccountPath = [orgPath stringByAppendingPathComponent:kUserAccountPlistFileName];
                     if ([fm fileExistsAtPath:userAccountPath]) {
                         SFUserAccount *userAccount = nil;
-                        [self loadUserAccountFromFile:userAccountPath account:&userAccount error:nil];
+                        NSError *err = nil;
+                        [self loadUserAccountFromFile:userAccountPath account:&userAccount error:&err];
+                        
+                        if (err != nil) {
+                            [SFSDKCoreLogger e:[self class] format:@"Error loading user account from file: %@", err];
+                        }
+                        
                         if (userAccount) {
                             userAccountMap[userAccount.accountIdentity] = userAccount;
                         } else {
@@ -257,6 +263,7 @@ static const NSUInteger SFUserAccountManagerCannotWriteUserData = 10004;
                                      userInfo:@{NSLocalizedDescriptionKey: reason}];
         }
         [SFSDKCoreLogger d:[self class] format:reason];
+        [SFSDKCoreLogger e:[self class] format:@"User account data could not be decrypted. Can't load account."];
         return NO;
     }
     SFEncryptionKey *encKey = [[SFKeyStoreManager sharedInstance] retrieveKeyWithLabel:kUserAccountEncryptionKeyLabel autoCreate:YES];
@@ -268,6 +275,7 @@ static const NSUInteger SFUserAccountManagerCannotWriteUserData = 10004;
                                      userInfo:@{NSLocalizedDescriptionKey: reason}];
         }
         [SFSDKCoreLogger w:[self class] format:reason];
+        [SFSDKCoreLogger e:[self class] format:@"Archive data not decrypted."];
         return NO;
     }
     
@@ -278,8 +286,12 @@ static const NSUInteger SFUserAccountManagerCannotWriteUserData = 10004;
     [unarchiver finishDecoding];
 
     if (decryptedAccount) {
+        [SFSDKCoreLogger e:[self class] format:@"User account unarchiver decoded."];
+        
         if (account) {
             *account = decryptedAccount;
+        } else {
+            [SFSDKCoreLogger e:[self class] format:@"Passed account not if(account)."];
         }
         return YES;
     } else {
@@ -288,6 +300,7 @@ static const NSUInteger SFUserAccountManagerCannotWriteUserData = 10004;
                                          code:SFUserAccountManagerCannotReadDecryptedArchive
                                      userInfo:@{NSLocalizedDescriptionKey: reason}];
         }
+        [SFSDKCoreLogger e:[self class] format:@"Decrypted account not if(decryptedAccount) and no error."];
         return NO;
     }
 }
