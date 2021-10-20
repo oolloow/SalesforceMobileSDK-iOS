@@ -254,6 +254,7 @@ static const NSUInteger SFUserAccountManagerCannotWriteUserData = 10004;
     
     NSFileManager *manager = [NSFileManager defaultManager];
     NSString *reason = @"User account data could not be decrypted. Can't load account.";
+    
     NSData *encryptedUserAccountData = [manager contentsAtPath:filePath];
     if (!encryptedUserAccountData) {
         reason = [NSString stringWithFormat:@"Could not retrieve user account data from '%@'", filePath];
@@ -263,12 +264,13 @@ static const NSUInteger SFUserAccountManagerCannotWriteUserData = 10004;
                                      userInfo:@{NSLocalizedDescriptionKey: reason}];
         }
         [SFSDKCoreLogger d:[self class] format:reason];
-        [SFSDKCoreLogger e:[self class] format:@"User account data could not be decrypted. Can't load account."];
+        [SFSDKCoreLogger e:[self class] format:@"Can not get data from disk when reading encryptedUserAccountData."];
         return NO;
     }
     SFEncryptionKey *encKey = [[SFKeyStoreManager sharedInstance] retrieveKeyWithLabel:kUserAccountEncryptionKeyLabel autoCreate:YES];
     NSData *decryptedArchiveData = [encKey decryptData:encryptedUserAccountData];
     if (!decryptedArchiveData) {
+        reason = @"Archive data could not be decrypted.";
         if (error) {
             *error = [NSError errorWithDomain:SFUserAccountManagerErrorDomain
                                          code:SFUserAccountManagerCannotRetrieveUserData
@@ -279,15 +281,12 @@ static const NSUInteger SFUserAccountManagerCannotWriteUserData = 10004;
         return NO;
     }
     
-    
     NSKeyedUnarchiver *unarchiver = [[NSKeyedUnarchiver alloc] initForReadingFromData:decryptedArchiveData error:nil];
     unarchiver.requiresSecureCoding = NO;
     SFUserAccount *decryptedAccount = [unarchiver decodeObjectForKey:NSKeyedArchiveRootObjectKey];
     [unarchiver finishDecoding];
 
     if (decryptedAccount) {
-        [SFSDKCoreLogger e:[self class] format:@"User account unarchiver decoded."];
-        
         if (account) {
             *account = decryptedAccount;
         } else {
