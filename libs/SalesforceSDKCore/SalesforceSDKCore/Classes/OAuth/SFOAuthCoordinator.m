@@ -372,7 +372,7 @@
     [SFSDKAppFeatureMarkers registerAppFeature:kSFAppFeatureSafariBrowserForLogin];
     __weak typeof(self) weakSelf = self;
      
-    _asWebAuthenticationSession = [[ASWebAuthenticationSession alloc] initWithURL:nativeBrowserUrl callbackURLScheme:self.credentials.redirectUri   completionHandler:^(NSURL *callbackURL, NSError *error) {
+    _asWebAuthenticationSession = [[ASWebAuthenticationSession alloc] initWithURL:nativeBrowserUrl callbackURLScheme:[NSURL URLWithString:self.credentials.redirectUri].scheme completionHandler:^(NSURL *callbackURL, NSError *error) {
         __strong typeof(weakSelf) strongSelf = weakSelf;
         if (!error && [[SFSDKURLHandlerManager sharedInstance] canHandleRequest:callbackURL options:nil]) {
             [[SFSDKURLHandlerManager sharedInstance] processRequest:callbackURL options:nil];
@@ -384,7 +384,8 @@
  
     // TODO: Remove in MobileSDK 9.0
     if (@available(iOS 13.0, *)) {
-        _asWebAuthenticationSession.prefersEphemeralWebBrowserSession = YES;
+        // OW change. When this is YES the SSO is simply not working.
+        _asWebAuthenticationSession.prefersEphemeralWebBrowserSession = NO;
     }
     
     [self.delegate oauthCoordinator:self didBeginAuthenticationWithSession:_asWebAuthenticationSession];
