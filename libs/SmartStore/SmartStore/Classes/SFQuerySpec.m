@@ -48,6 +48,7 @@ NSString * const kQuerySpecParamBeginKey = @"beginKey";
 NSString * const kQuerySpecParamEndKey = @"endKey";
 NSString * const kQuerySpecParamLikeKey = @"likeKey";
 NSString * const kQuerySpecParamSmartSql = @"smartSql";
+NSString * const kQuerySpecParamParams = @"smartSqlParams";
 
 
 @implementation SFQuerySpec
@@ -164,6 +165,7 @@ NSString * const kQuerySpecParamSmartSql = @"smartSql";
     NSString* endKey = [querySpec nonNullObjectForKey:kQuerySpecParamEndKey];
     NSString* matchKey = [querySpec nonNullObjectForKey:kQuerySpecParamMatchKey];
     NSString* likeKey = [querySpec nonNullObjectForKey:kQuerySpecParamLikeKey];
+    NSArray* params = [querySpec nonNullObjectForKey:kQuerySpecParamParams];
     NSString* smartSql = [querySpec nonNullObjectForKey:kQuerySpecParamSmartSql];
     NSString* orderPath = [querySpec nonNullObjectForKey:kQuerySpecParamOrderPath];
     NSString* rawOrder =  [querySpec nonNullObjectForKey:kQuerySpecParamOrder];
@@ -192,6 +194,7 @@ NSString * const kQuerySpecParamSmartSql = @"smartSql";
             break;
         case kSFSoupQueryTypeSmart:
             self = [SFQuerySpec newSmartQuerySpec:smartSql withPageSize:pageSize];
+            self.smartQueryParams = params;
             break;
         case kSFSoupQueryTypeMatch:
             self = [SFQuerySpec newMatchQuerySpec:targetSoupName withSelectPaths:selectPaths withPath:path withMatchKey:matchKey withOrderPath:orderPath withOrder:order withPageSize:pageSize];
@@ -230,6 +233,8 @@ NSString * const kQuerySpecParamSmartSql = @"smartSql";
             break;
             
         case kSFSoupQueryTypeSmart:
+            if (nil != self.smartQueryParams)
+                return self.smartQueryParams;
             break;
     }
     
@@ -454,6 +459,8 @@ NSString * const kQuerySpecParamSmartSql = @"smartSql";
 
         case kSFSoupQueryTypeSmart:
             result[kQuerySpecParamSmartSql] = self.smartSql;
+            if (nil != self.smartQueryParams)
+                result[kQuerySpecParamParams] = self.smartQueryParams;
             break;
 
         case kSFSoupQueryTypeMatch:

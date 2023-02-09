@@ -49,6 +49,7 @@ extern NSString * const kQuerySpecParamBeginKey;
 extern NSString * const kQuerySpecParamEndKey;
 extern NSString * const kQuerySpecParamLikeKey;
 extern NSString * const kQuerySpecParamSmartSql;
+extern NSString * const kQuerySpecParamParams;
 
 extern NSUInteger const kQuerySpecDefaultPageSize;
 
@@ -125,6 +126,8 @@ NS_SWIFT_NAME(QuerySpec)
  likeKey is used for like queries.
  */
 @property (nonatomic, strong) NSString *likeKey;
+
+@property (nonatomic, strong) NSArray *smartQueryParams;
 
 /**
  matchKey is used for exact and match queries.
