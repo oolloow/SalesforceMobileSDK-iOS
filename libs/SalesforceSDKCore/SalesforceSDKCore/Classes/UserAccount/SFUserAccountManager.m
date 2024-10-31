@@ -37,7 +37,6 @@
 #import "SFSDKAuthRootController.h"
 #import "SFSDKWindowContainer.h"
 #import "SFSDKIDPAuthHelper.h"
-#import "SFSDKIDPAuthClient.h"
 #import "SFSDKLoginFlowSelectionViewController.h"
 #import "SFSDKUserSelectionNavViewController.h"
 #import "SFRestAPI+Blocks.h"
