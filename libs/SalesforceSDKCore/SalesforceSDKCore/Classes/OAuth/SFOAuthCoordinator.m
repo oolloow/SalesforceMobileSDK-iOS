@@ -88,7 +88,7 @@
         self.authenticating = NO;
         _timeout = kSFOAuthDefaultTimeout;
         _view = nil;
-        _authClient = [[SFSDKOAuth2 alloc] init];
+        _authClient = [SFUserAccountManager sharedInstance].authClient();
     }
     return self;
 }
@@ -101,7 +101,7 @@
         self.authenticating = NO;
         _timeout = kSFOAuthDefaultTimeout;
         _view = nil;
-        _authClient = [[SFSDKOAuth2 alloc] init];
+        _authClient = [SFUserAccountManager sharedInstance].authClient();
     }
     return self;
 }
